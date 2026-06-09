@@ -724,14 +724,6 @@ body{
 .sidebar-overlay.open{display:block;}
 
 /* Mobile menu button */
-.mobile-menu-btn{
-  display:none;
-  align-items:center;justify-content:center;
-  width:44px;height:44px;
-  background:none;border:none;color:var(--paper);
-  font-size:1.4rem;cursor:pointer;flex-shrink:0;
-  -webkit-tap-highlight-color:transparent;
-}
 
 @media(max-width:700px){
   /* Show bottom tabs, hide desktop nav */
@@ -739,7 +731,6 @@ body{
   .topnav-brand{font-size:0.95rem;padding:0 0.9rem;}
   .topnav{height:48px;}
   .mobile-tabbar{display:block!important;}
-  .mobile-menu-btn{display:flex!important;}
 
   /* Safe area spacing */
   .app{padding-bottom:calc(58px + env(safe-area-inset-bottom));}
@@ -831,7 +822,6 @@ body{
 }
 
 @media(min-width:701px){
-  .mobile-menu-btn{display:none!important;}
   .mobile-tabbar{display:none!important;}
   .sidebar-overlay{display:none!important;}
 }
@@ -1097,7 +1087,6 @@ body{
 </div>
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebars()"></div>
 <nav class="topnav">
-  <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileSidebar()" style="display:none;">☰</button>
   <div class="topnav-brand">My <em>Palette Studio</em></div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('palettes',this)"><span class="tab-icon">🎨</span> My Palettes</button>
@@ -4164,7 +4153,6 @@ function mobileNavDrawer(id, btn) {
   document.querySelectorAll('.nav-tab').forEach(function(t){
     t.classList.toggle('active', t.getAttribute('onclick')&&t.getAttribute('onclick').includes("'"+id+"'"));
   });
-  updateMenuBtn(id);
 }
 
 function updateMobileBar(id) {
@@ -4199,12 +4187,6 @@ function closeMobileDrawer() {
   if (menuIcon) menuIcon.textContent = '≡';
 }
 
-function updateMenuBtn(id) {
-  var btn = document.getElementById('mobile-menu-btn');
-  if (!btn) return;
-  var hasSidebar = (id === 'palettes' || id === 'reference');
-  btn.style.display = (isMobile() && hasSidebar) ? 'flex' : 'none';
-}
 
 function toggleMobileSidebar() {
   var page = document.querySelector('.page.active');
@@ -4237,7 +4219,6 @@ window.showPage = function(id, btn) {
     document.querySelectorAll('.mobile-nav-item').forEach(function(t){
       t.classList.toggle('active', t.dataset.page === id);
     });
-    updateMenuBtn(id);
   }
 };
 
@@ -4246,9 +4227,9 @@ window.addEventListener('resize', function(){
     closeSidebars();
     closeMobileDrawer();
   }
-  var page = document.querySelector('.page.active');
-  if (page) updateMenuBtn(page.id.replace('page-',''));
 });
+
+
 
 // iOS momentum scroll prevention on non-scrollable areas
 document.addEventListener('touchmove', function(e){
