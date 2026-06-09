@@ -3647,6 +3647,8 @@ function swatchCamAction(palId, idx, hasPhoto){
   document.getElementById('_cmd').onclick=function(){dismiss();removeSwatchPhoto(palId,idx);};
   document.getElementById('_cmc').onclick=dismiss;
 }
+
+function toggleSwatchPhoto(palId, idx){
   var pal=palettes.find(function(p){return p.id===palId;});
   if(!pal||!pal.colors[idx]||!pal.colors[idx].photo) return;
   var c=pal.colors[idx];
