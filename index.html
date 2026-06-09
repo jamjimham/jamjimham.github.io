@@ -199,44 +199,6 @@ body{
   opacity:0;transition:opacity 0.13s;
 }
 .sg-card:hover .sg-del{opacity:1;}
-
-/* Photo swatch feature */
-.sg-photo{
-  position:absolute;inset:0;
-  background-size:cover;background-position:center;
-  display:none;
-}
-.sg-photo.visible{display:block;}
-.sg-cam{
-  position:absolute;bottom:4px;left:4px;
-  background:rgba(0,0,0,0.32);border:none;color:white;
-  border-radius:50%;width:22px;height:22px;
-  font-size:0.72rem;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  opacity:0;transition:opacity 0.13s;
-  z-index:3;
-}
-.sg-card:hover .sg-cam{opacity:1;}
-/* On touch devices always show camera and delete buttons */
-@media(hover:none){
-  .sg-del,.sg-cam{opacity:0.75;}
-}
-.sg-photo-toggle{
-  position:absolute;bottom:4px;right:28px;
-  background:rgba(0,0,0,0.32);border:none;color:white;
-  border-radius:10px;padding:2px 6px;
-  font-size:0.58rem;cursor:pointer;
-  display:none;align-items:center;gap:3px;
-  opacity:0;transition:opacity 0.13s;
-  z-index:3;white-space:nowrap;
-}
-.sg-photo-toggle.has-photo{display:flex;}
-.sg-card:hover .sg-photo-toggle{opacity:1;}
-@media(hover:none){
-  .sg-photo-toggle.has-photo{opacity:0.75;}
-}
-/* hidden file input */
-.sg-file-input{display:none;}
 .sg-body{padding:0.4rem 0.45rem 0.45rem;}
 .sg-name{font-family:'IM Fell English',serif;font-size:0.75rem;line-height:1.2;margin-bottom:0.2rem;}
 .sg-pig{font-size:0.6rem;font-family:'Courier New',monospace;color:var(--ink3);}
@@ -2231,16 +2193,10 @@ function renderSwatchView(pal,content){
     sorted.map((c,i)=>{
       const realIdx=pal.colors.findIndex(x=>x===c);
       const note=c.note||'';
-      const photoKey=`swatchphoto_${pal.id}_${realIdx}`;
-      const hasPhoto=!!c.photo;
-      const showPhoto=hasPhoto&&(c.photoVisible!==false);
       return `<div class="sg-card" draggable="false" data-idx="${realIdx}" data-palid="${pal.id}">
         <div class="sg-swatch" style="background:${c.hex};">
-          <canvas id="sgc_${pal.id}_${realIdx}" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;${showPhoto?'opacity:0;':''}"></canvas>
-          <div class="sg-photo${showPhoto?' visible':''}" id="sgp_${pal.id}_${realIdx}" style="${c.photo?'background-image:url('+c.photo+');':''}"></div>
+          <canvas id="sgc_${pal.id}_${realIdx}" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
           <button class="sg-del" onclick="removeFromPalette('${pal.id}',${realIdx})">✕</button>
-          <button class="sg-cam" title="${hasPhoto?'Replace or remove photo':'Attach photo'}" onclick="swatchCamAction('${pal.id}',${realIdx},${hasPhoto})">${hasPhoto?'📷✓':'📷'}</button>
-          <button class="sg-photo-toggle${hasPhoto?' has-photo':''}" id="sgt_${pal.id}_${realIdx}" onclick="toggleSwatchPhoto('${pal.id}',${realIdx})" title="Toggle photo/render">${showPhoto?'◼ render':'🖼 photo'}</button>
         </div>
         <div class="sg-body">
           <div class="sg-name">${c.name}</div>
@@ -3571,103 +3527,6 @@ function saveColorNote(palId, idx, note){
   if (!pal || !pal.colors[idx]) return;
   pal.colors[idx].note = note;
   savePalettes(palettes);
-}
-
-// ══════════════════════════════════════════════════════════════
-// SWATCH PHOTO ATTACHMENT
-// ══════════════════════════════════════════════════════════════
-function triggerPhotoUpload(palId, idx){
-  // Reuse or create a hidden file input
-  var inputId='_photoinput_'+palId+'_'+idx;
-  var inp=document.getElementById(inputId);
-  if(!inp){
-    inp=document.createElement('input');
-    inp.type='file'; inp.accept='image/*'; inp.capture='environment';
-    inp.id=inputId; inp.className='sg-file-input';
-    document.body.appendChild(inp);
-    inp.addEventListener('change',function(){
-      var file=inp.files[0]; if(!file) return;
-      // Resize to max 400px wide before storing as base64 to keep localStorage lean
-      var reader=new FileReader();
-      reader.onload=function(ev){
-        var img=new Image();
-        img.onload=function(){
-          var MAX=400;
-          var scale=Math.min(1,MAX/Math.max(img.width,img.height));
-          var w=Math.round(img.width*scale), h=Math.round(img.height*scale);
-          var cv=document.createElement('canvas'); cv.width=w; cv.height=h;
-          cv.getContext('2d').drawImage(img,0,0,w,h);
-          var dataUrl=cv.toDataURL('image/jpeg',0.82);
-          var pal=palettes.find(function(p){return p.id===palId;});
-          if(!pal||!pal.colors[idx]) return;
-          pal.colors[idx].photo=dataUrl;
-          pal.colors[idx].photoVisible=true;
-          savePalettes(palettes);
-          // Update DOM without full re-render
-          var photoDiv=document.getElementById('sgp_'+palId+'_'+idx);
-          var canvasEl=document.getElementById('sgc_'+palId+'_'+idx);
-          var toggleBtn=document.getElementById('sgt_'+palId+'_'+idx);
-          if(photoDiv){photoDiv.style.backgroundImage='url('+dataUrl+')';photoDiv.classList.add('visible');}
-          if(canvasEl){canvasEl.style.opacity='0';}
-          if(toggleBtn){toggleBtn.classList.add('has-photo');toggleBtn.textContent='◼ render';}
-          showToast('Photo attached');
-        };
-        img.src=ev.target.result;
-      };
-      reader.readAsDataURL(file);
-      inp.value=''; // reset so same file can be re-selected
-    });
-  }
-  inp.click();
-}
-
-function swatchCamAction(palId, idx, hasPhoto){
-  if(!hasPhoto){ triggerPhotoUpload(palId,idx); return; }
-  // Show a tiny action sheet-style popup
-  var existing=document.getElementById('_cam_menu');
-  if(existing) existing.remove();
-  var menu=document.createElement('div');
-  menu.id='_cam_menu';
-  menu.style.cssText='position:fixed;z-index:9999;background:white;border:1px solid var(--border);border-radius:6px;box-shadow:0 4px 16px rgba(30,23,16,0.18);padding:0.3rem 0;min-width:160px;font-family:Crimson Pro,serif;font-size:0.88rem;';
-  menu.innerHTML=[
-    '<div style="padding:0.45rem 1rem;cursor:pointer;color:var(--ink);" id="_cmr">🔄 Replace photo</div>',
-    '<div style="padding:0.45rem 1rem;cursor:pointer;color:var(--rust);" id="_cmd">🗑 Remove photo</div>',
-    '<div style="padding:0.45rem 1rem;cursor:pointer;color:var(--ink3);" id="_cmc">Cancel</div>'
-  ].join('');
-  document.body.appendChild(menu);
-  // Position near the camera button
-  var btn=event.currentTarget||event.target;
-  var r=btn.getBoundingClientRect();
-  menu.style.left=Math.min(r.left, window.innerWidth-170)+'px';
-  menu.style.top=(r.bottom+4)+'px';
-  var dismiss=function(){menu.remove();document.removeEventListener('click',outsideClick,true);};
-  var outsideClick=function(e){if(!menu.contains(e.target))dismiss();};
-  setTimeout(function(){document.addEventListener('click',outsideClick,true);},10);
-  document.getElementById('_cmr').onclick=function(){dismiss();triggerPhotoUpload(palId,idx);};
-  document.getElementById('_cmd').onclick=function(){dismiss();removeSwatchPhoto(palId,idx);};
-  document.getElementById('_cmc').onclick=dismiss;
-}
-  var pal=palettes.find(function(p){return p.id===palId;});
-  if(!pal||!pal.colors[idx]||!pal.colors[idx].photo) return;
-  var c=pal.colors[idx];
-  c.photoVisible=!c.photoVisible;
-  savePalettes(palettes);
-  var photoDiv=document.getElementById('sgp_'+palId+'_'+idx);
-  var canvasEl=document.getElementById('sgc_'+palId+'_'+idx);
-  var toggleBtn=document.getElementById('sgt_'+palId+'_'+idx);
-  if(photoDiv) photoDiv.classList.toggle('visible',c.photoVisible);
-  if(canvasEl) canvasEl.style.opacity=c.photoVisible?'0':'';
-  if(toggleBtn) toggleBtn.textContent=c.photoVisible?'◼ render':'🖼 photo';
-}
-
-function removeSwatchPhoto(palId, idx){
-  var pal=palettes.find(function(p){return p.id===palId;});
-  if(!pal||!pal.colors[idx]) return;
-  delete pal.colors[idx].photo;
-  delete pal.colors[idx].photoVisible;
-  savePalettes(palettes);
-  renderSwatchView(pal, document.getElementById('palette-view-content'));
-  showToast('Photo removed');
 }
 
 var debouncedRenderRef     = debounce(renderRef, 200);
