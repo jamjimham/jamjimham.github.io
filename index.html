@@ -116,6 +116,9 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
 .sort-btn{padding:0.5rem 0.85rem;border:none;border-right:1px solid var(--border);background:transparent;font-family:'Crimson Pro',serif;font-size:0.72rem;color:var(--ink3);cursor:pointer;transition:color 0.13s,background 0.13s;display:flex;align-items:center;gap:0.28rem;white-space:nowrap;flex-shrink:0;}
 .sort-btn:hover{background:var(--paper3);color:var(--ink2);}
 .sort-btn.active{background:var(--ink);color:var(--gold2);font-weight:600;}
+.sb-by{display:inline;}
+.sb-long{display:inline;}
+.sb-short{display:none;}
 .sort-label{font-size:0.65rem;color:var(--ink3);font-style:italic;padding:0 0.85rem;white-space:nowrap;flex-shrink:0;margin-left:auto;}
 
 .wheel-view{display:flex;flex-direction:column;align-items:center;gap:1.2rem;}
@@ -358,6 +361,8 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
   .palette-item{min-height:52px;padding:0.65rem 0.9rem;}
   .sort-btn{min-height:44px;font-size:0.78rem;padding:0.5rem 1rem;}
   .palette-item-btn{min-width:36px;min-height:36px;font-size:0.9rem;}
+  .sort-btn{padding:0.5rem 0.7rem;}    /* tighter so all five fit on a 390-wide phone */
+  .sort-label{display:none;}            /* hide "6 colors" label on mobile to save space */
   .ref-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0.65rem;}
   .swatch-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0.65rem;}
   .ref-swatch{height:92px;}
@@ -368,6 +373,15 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
   .palette-name-input{font-size:16px!important;min-width:100%;}
   .view-tabs{width:100%;justify-content:stretch;}
   .view-tab{flex:1;text-align:center;justify-content:center;}
+  /* Make the primary action full-width on mobile rather than orphaned */
+  .btn-add-colors{width:100%;justify-content:center;display:flex;align-items:center;}
+  /* Sort tabs: hide "By " prefix and use short form for Lightfastness so all five fit one row */
+  .sb-by{display:none;}
+  .sb-long{display:none;}
+  .sb-short{display:inline;}
+  /* soft fade on the right edge of the scroll bar so the bar doesn't cut off harshly */
+  .palette-sort-bar{position:relative;}
+  .palette-sort-bar::after{content:'';position:absolute;right:0;top:0;bottom:0;width:24px;background:linear-gradient(to right, rgba(243,237,227,0), var(--paper2));pointer-events:none;}
   .ref-controls{padding:0.6rem 0.9rem;gap:0.5rem;}
   .ref-search-wrap input{font-size:16px!important;padding:0.5rem 0.85rem 0.5rem 2rem;}
   .tr-pip{width:22px;height:22px;}
@@ -996,45 +1010,88 @@ function mudInfo(h1,h2,mixed){
 }
 
 function renderSwatchCanvas(canvas,hex,gran,transparency,W,H){
-  const dpr=window.devicePixelRatio||1;
-  canvas.width=W*dpr;canvas.height=H*dpr;
-  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+  // The previous version did ctx.scale(dpr,dpr) then putImageData(W,H), but
+  // putImageData IGNORES the canvas transform — so at retina/mobile DPR≥2 only
+  // the top-left quadrant was painted and the CSS background hex showed through
+  // for the rest. This version writes the full physical pixel buffer.
+  const dpr=Math.min(2, window.devicePixelRatio||1);    // cap at 2x for perf on 3x phones
+  const PW=Math.max(1,Math.round(W*dpr)), PH=Math.max(1,Math.round(H*dpr));
+  canvas.width=PW; canvas.height=PH;
+  const ctx=canvas.getContext('2d');
   const[r,g,b]=parseHex(hex);
-  const imgData=ctx.createImageData(W,H);const dat=imgData.data;
-  // Stable seed from hex — same color always renders identically
-  let _hv=0;for(let _ci=0;_ci<hex.length;_ci++){_hv=(_hv*31+hex.charCodeAt(_ci))&0xffffff;}
-  const ox=(_hv%200),oy=((_hv>>8)%200);
-  for(let y=0;y<H;y++){for(let x=0;x<W;x++){
-    const i=(y*W+x)*4;
-    const pn=fbm(ox+x*0.14,oy+y*0.14,3)*28;
-    const wn=fbm(ox+x*0.04,oy+y*0.04,2)*40;
-    let gs=0;
-    if(gran){const gn=fbm(ox+x*0.28,oy+y*0.28,4);gs=Math.max(0,0.45-gn)*120;}
-    const cx=x/W-0.5,cy=y/H-0.5,dist=Math.sqrt(cx*cx+cy*cy);
-    const bloom=Math.max(0,(dist-0.28)*0.7)*55;
-    const sheen=Math.max(0,1-Math.sqrt(Math.pow(x/W-0.25,2)+Math.pow(y/H-0.2,2))*3.5)*18;
-    const delta=-(gs+bloom+wn)+pn+sheen;
-    dat[i]=Math.min(255,Math.max(0,r+delta));
-    dat[i+1]=Math.min(255,Math.max(0,g+delta));
-    dat[i+2]=Math.min(255,Math.max(0,b+delta));
-    dat[i+3]=Math.round(255*(transparency==='T'?0.82:transparency==='ST'?0.93:1.0));
-  }}
+  // Warm paper that shows through transparent washes (matches --paper #faf7f2)
+  const pR=250, pG=247, pB=242;
+  // How much paper bleeds through for each transparency rating
+  const baseTrans = transparency==='T' ? 0.16 : transparency==='ST' ? 0.07 : 0.01;
+  // Stable seed from hex so the same color always renders identically
+  let _hv=0; for(let _ci=0;_ci<hex.length;_ci++){ _hv=(_hv*31+hex.charCodeAt(_ci))&0xffffff; }
+  const ox=(_hv%200), oy=((_hv>>8)%200);
+  const imgData=ctx.createImageData(PW,PH); const dat=imgData.data;
+  for(let py=0; py<PH; py++){
+    const yy=py/PH;
+    const ny=py/dpr;                          // logical coord so noise scale is DPR-independent
+    for(let px=0; px<PW; px++){
+      const xx=px/PW;
+      const nx=px/dpr;
+      const i=(py*PW+px)*4;
+      // — Large-scale wash variation (unevenness like a brush stroke)
+      const wash=fbm(ox+nx*0.04, oy+ny*0.04, 3);
+      // — Fine paper grain (subtle, visible especially through thin washes)
+      const grain=fbm(ox+nx*0.42, oy+ny*0.42, 2);
+      // — Edge pooling: pigment beads at the outer band (cauliflower effect)
+      const dEdge=Math.min(Math.min(xx,1-xx), Math.min(yy,1-yy));
+      const edgePool=Math.max(0, 1 - dEdge*5);
+      // — Gravity: bottom is slightly darker (paint settles downward)
+      const gravity=Math.pow(yy, 1.6) * 0.28;
+      // — Density of the pigment film at this point (1.0 ≈ full masstone)
+      let density = 0.92 + (wash-0.5)*0.14 + edgePool*0.10 + gravity*0.09;
+      density = Math.max(0.45, Math.min(1.08, density));
+      // — Effective paper-through (more where the film is thinner)
+      const trans = baseTrans * (1.6 - density*0.6);
+      const cover = Math.max(0, Math.min(1, density * (1 - trans)));
+      // — Blend pigment over paper
+      let outR = r*cover + pR*(1-cover);
+      let outG = g*cover + pG*(1-cover);
+      let outB = b*cover + pB*(1-cover);
+      // — Granulation: punctate specks + coarse clumps where heavy pigment settles
+      if(gran){
+        const gn=fbm(ox+nx*0.28, oy+ny*0.28, 3);
+        const speck=Math.max(0, gn-0.44);
+        let dark=Math.pow(speck, 1.15)*340;
+        const cl=fbm(ox+nx*0.10, oy+ny*0.10, 2);
+        if(cl<0.42) dark += (0.42-cl)*60;
+        outR -= dark; outG -= dark; outB -= dark;
+      }
+      // — Tiny per-pixel grain shift (subtle paper texture)
+      const gshift = (grain-0.5) * 12;
+      outR += gshift; outG += gshift; outB += gshift;
+      // — Wet sheen highlight (catches light in the upper-left)
+      const sx=xx-0.22, sy=yy-0.18;
+      const sheen=Math.max(0, 1 - Math.sqrt(sx*sx+sy*sy)*3.5) * 11;
+      outR += sheen; outG += sheen; outB += sheen;
+      dat[i]   = Math.min(255, Math.max(0, outR));
+      dat[i+1] = Math.min(255, Math.max(0, outG));
+      dat[i+2] = Math.min(255, Math.max(0, outB));
+      dat[i+3] = 255;
+    }
+  }
   ctx.putImageData(imgData,0,0);
 }
 
 function renderTranspCanvas(canvas,hex,transparency,W,H){
-  const dpr=window.devicePixelRatio||1;
-  canvas.width=W*dpr;canvas.height=H*dpr;
-  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+  const dpr=Math.min(2, window.devicePixelRatio||1);
+  const PW=Math.max(1,Math.round(W*dpr)), PH=Math.max(1,Math.round(H*dpr));
+  canvas.width=PW; canvas.height=PH;
+  const ctx=canvas.getContext('2d');
   const[r,g,b]=parseHex(hex);
   const maxA=transparency==='T'?0.75:transparency==='ST'?0.90:0.98;
   const minA=transparency==='T'?0.04:transparency==='ST'?0.12:0.35;
-  const imgData=ctx.createImageData(W,H);const dat=imgData.data;
-  const cS=4;
-  for(let y=0;y<H;y++){for(let x=0;x<W;x++){
-    const i=(y*W+x)*4,cl=((Math.floor(y/cS)+Math.floor(x/cS))%2===0);
+  const imgData=ctx.createImageData(PW,PH);const dat=imgData.data;
+  const cS=4*dpr;   // checker size in physical pixels (was 4 logical)
+  for(let y=0;y<PH;y++){for(let x=0;x<PW;x++){
+    const i=(y*PW+x)*4,cl=((Math.floor(y/cS)+Math.floor(x/cS))%2===0);
     const bg0=cl?232:208,bg1=cl?228:204,bg2=cl?220:196;
-    const a=lerp(maxA,minA,x/W);
+    const a=lerp(maxA,minA,x/PW);
     dat[i]=Math.round(lerp(bg0,r,a));dat[i+1]=Math.round(lerp(bg1,g,a));
     dat[i+2]=Math.round(lerp(bg2,b,a));dat[i+3]=255;
   }}
@@ -1159,7 +1216,7 @@ const COLORS=[
   {group:"Greens",name:"Perylene Green",brand:"daniel-smith",pigment:"PBk31",hex:"#1a4028",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Very dark transparent green."},
   {group:"Greens",name:"Olive Green",brand:"daniel-smith",pigment:"PY97+PB29+PBr7",hex:"#687030",lf:"I",transparency:"ST",gran:true,single:false,grade:"artist",notes:"Earthy olive. Granulating."},
   {group:"Neutrals",name:"Raw Umber",brand:"daniel-smith",pigment:"PBr7",hex:"#786040",lf:"I",transparency:"ST",gran:true,single:true,grade:"artist",notes:"Cool brown. Heavy granulator."},
-  {group:"Neutrals",name:"Burnt Umber",brand:"daniel-smith",pigment:"PBr7",hex:"#582018",lf:"I",transparency:"ST",gran:true,single:true,grade:"artist",notes:"Rich warm brown."},
+  {group:"Neutrals",name:"Burnt Umber",brand:"daniel-smith",pigment:"PBr7",hex:"#6a3818",lf:"I",transparency:"ST",gran:true,single:true,grade:"artist",notes:"Rich warm brown."},
   {group:"Neutrals",name:"Lunar Red Rock",brand:"daniel-smith",pigment:"PR101",hex:"#a03820",lf:"I",transparency:"ST",gran:true,single:true,grade:"artist",notes:"Red hematite. Granulating."},
   {group:"Neutrals",name:"Lunar Earth",brand:"daniel-smith",pigment:"PBr11",hex:"#806040",lf:"I",transparency:"T",gran:true,single:true,grade:"artist",notes:"Magnesium ferrite. Granulating earth."},
   {group:"Neutrals",name:"Moonglow",brand:"daniel-smith",pigment:"PG18+PB29+PR177",hex:"#485878",lf:"I",transparency:"T",gran:true,single:false,grade:"artist",notes:"Luminous granulating neutral."},
@@ -1228,7 +1285,7 @@ const COLORS=[
   {group:"Greens",name:"Cobalt Green",brand:"winsor-newton",pigment:"PG50",hex:"#408065",lf:"I",transparency:"ST",gran:true,single:true,grade:"artist",notes:"Rare granulating blue-green."},
   {group:"Greens",name:"Terre Verte",brand:"winsor-newton",pigment:"PG23",hex:"#788060",lf:"I",transparency:"T",gran:true,single:true,grade:"artist",notes:"Natural earth green. Granulating."},
   {group:"Neutrals",name:"Raw Umber",brand:"winsor-newton",pigment:"PBr7",hex:"#786040",lf:"I",transparency:"ST",gran:true,single:true,grade:"artist",notes:"Standard granulating brown."},
-  {group:"Neutrals",name:"Burnt Umber",brand:"winsor-newton",pigment:"PBr7",hex:"#582018",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Deep warm brown."},
+  {group:"Neutrals",name:"Burnt Umber",brand:"winsor-newton",pigment:"PBr7",hex:"#6a3818",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Deep warm brown."},
   {group:"Neutrals",name:"Vandyke Brown",brand:"winsor-newton",pigment:"PBr8+PBk6",hex:"#3c2010",lf:"II",transparency:"T",gran:false,single:false,grade:"artist",notes:"Classic deep warm brown."},
   {group:"Neutrals",name:"Warm Sepia",brand:"winsor-newton",pigment:"PBr7+PBk9",hex:"#402010",lf:"I",transparency:"ST",gran:false,single:false,grade:"artist",notes:"Deep warm sepia."},
   {group:"Neutrals",name:"Neutral Tint",brand:"winsor-newton",pigment:"PBk6+PV19+PB15",hex:"#383840",lf:"II",transparency:"T",gran:false,single:false,grade:"artist",notes:"Warm shadow colour."},
@@ -1293,7 +1350,7 @@ const COLORS=[
   {group:"Greens",name:"May Green",brand:"schmincke",pigment:"PG36+PY3+PY138",hex:"#709820",lf:"II",transparency:"T",gran:false,single:false,grade:"artist",notes:"Fresh spring green."},
   {group:"Greens",name:"Olive Green",brand:"schmincke",pigment:"PY42+PY97+PG7",hex:"#687030",lf:"I",transparency:"ST",gran:true,single:false,grade:"artist",notes:"Earthy olive."},
   {group:"Neutrals",name:"Raw Umber",brand:"schmincke",pigment:"PBr7",hex:"#786040",lf:"I",transparency:"ST",gran:true,single:true,grade:"artist",notes:"Heavy granulation."},
-  {group:"Neutrals",name:"Burnt Umber",brand:"schmincke",pigment:"PBr7",hex:"#582018",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Versatile warm brown."},
+  {group:"Neutrals",name:"Burnt Umber",brand:"schmincke",pigment:"PBr7",hex:"#6a3818",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Versatile warm brown."},
   {group:"Neutrals",name:"Vandyke Brown",brand:"schmincke",pigment:"PBr8",hex:"#402010",lf:"I",transparency:"T",gran:false,single:true,grade:"artist",notes:"Deep natural brown."},
   {group:"Neutrals",name:"Sepia",brand:"schmincke",pigment:"PBr7+PBk9",hex:"#381808",lf:"I",transparency:"T",gran:false,single:false,grade:"artist",notes:"Classic warm sepia."},
   {group:"Neutrals",name:"Neutral Tint",brand:"schmincke",pigment:"PB29+PBk6",hex:"#383840",lf:"I",transparency:"T",gran:false,single:false,grade:"artist",notes:"Atmospheric neutral."},
@@ -1315,7 +1372,7 @@ const COLORS=[
   {group:"Oranges",name:"Cadmium Orange",brand:"holbein",pigment:"PO20",hex:"#e06010",lf:"I",transparency:"O",gran:false,single:true,grade:"artist",notes:"Strong opaque orange."},
   {group:"Oranges",name:"Permanent Orange",brand:"holbein",pigment:"PO62",hex:"#e85820",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Semi-transparent warm orange."},
   {group:"Oranges",name:"Burnt Sienna",brand:"holbein",pigment:"PBr7",hex:"#9a3818",lf:"I",transparency:"ST",gran:true,single:true,grade:"artist",notes:"Classic warm earth."},
-  {group:"Oranges",name:"Burnt Umber",brand:"holbein",pigment:"PBr7",hex:"#582018",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Rich warm brown."},
+  {group:"Oranges",name:"Burnt Umber",brand:"holbein",pigment:"PBr7",hex:"#6a3818",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Rich warm brown."},
   {group:"Oranges",name:"Venetian Red",brand:"holbein",pigment:"PR101",hex:"#903030",lf:"I",transparency:"O",gran:true,single:true,grade:"artist",notes:"Classic opaque red-brown."},
   {group:"Oranges",name:"Indian Red",brand:"holbein",pigment:"PR101",hex:"#802020",lf:"I",transparency:"O",gran:true,single:true,grade:"artist",notes:"Deep opaque red-brown."},
   {group:"Reds",name:"Cadmium Red",brand:"holbein",pigment:"PR108",hex:"#c02018",lf:"I",transparency:"O",gran:false,single:true,grade:"artist",notes:"Excellent opacity. Japanese formula."},
@@ -1410,7 +1467,7 @@ const COLORS=[
   {group:"Greens",name:"English Green",brand:"sennelier",pigment:"PG7+PY3",hex:"#386830",lf:"I",transparency:"T",gran:false,single:false,grade:"artist",notes:"Natural landscape tone."},
   {group:"Greens",name:"Chromium Oxide Green",brand:"sennelier",pigment:"PG17",hex:"#4a6838",lf:"I",transparency:"O",gran:false,single:true,grade:"artist",notes:"Muted earthy opaque."},
   {group:"Neutrals",name:"Raw Umber",brand:"sennelier",pigment:"PBr7",hex:"#786040",lf:"I",transparency:"ST",gran:true,single:true,grade:"artist",notes:"Classic earth."},
-  {group:"Neutrals",name:"Burnt Umber",brand:"sennelier",pigment:"PBr7",hex:"#582018",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Classic warm brown."},
+  {group:"Neutrals",name:"Burnt Umber",brand:"sennelier",pigment:"PBr7",hex:"#6a3818",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Classic warm brown."},
   {group:"Neutrals",name:"Van Dyke Brown",brand:"sennelier",pigment:"PBr8",hex:"#402010",lf:"I",transparency:"T",gran:false,single:true,grade:"artist",notes:"Deep transparent brown."},
   {group:"Neutrals",name:"Sepia",brand:"sennelier",pigment:"PBr7+PBk9",hex:"#381808",lf:"I",transparency:"T",gran:false,single:false,grade:"artist",notes:"Warm sepia."},
   {group:"Blacks",name:"Ivory Black",brand:"sennelier",pigment:"PBk9",hex:"#201810",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Classic warm black with honey."},
@@ -1449,7 +1506,7 @@ const COLORS=[
   {group:"Greens",name:"Cobalt Green",brand:"mgraham",pigment:"PG50",hex:"#408060",lf:"I",transparency:"ST",gran:true,single:true,grade:"artist",notes:"Rare granulating teal."},
   {group:"Greens",name:"Chromium Oxide Green",brand:"mgraham",pigment:"PG17",hex:"#4a6838",lf:"I",transparency:"O",gran:false,single:true,grade:"artist",notes:"Muted earthy opaque."},
   {group:"Neutrals",name:"Raw Umber",brand:"mgraham",pigment:"PBr7",hex:"#786040",lf:"I",transparency:"ST",gran:true,single:true,grade:"artist",notes:"Honey base. Good flow."},
-  {group:"Neutrals",name:"Burnt Umber",brand:"mgraham",pigment:"PBr7",hex:"#582018",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Rich warm brown."},
+  {group:"Neutrals",name:"Burnt Umber",brand:"mgraham",pigment:"PBr7",hex:"#6a3818",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Rich warm brown."},
   {group:"Blacks",name:"Payne's Gray",brand:"mgraham",pigment:"PBk19+PB15",hex:"#383848",lf:"I",transparency:"T",gran:false,single:false,grade:"artist",notes:"Honey base — extra creamy."},
   {group:"Blacks",name:"Lamp Black",brand:"mgraham",pigment:"PBk6",hex:"#181818",lf:"I",transparency:"T",gran:false,single:true,grade:"artist",notes:"Cool intense."},
   {group:"Blacks",name:"Ivory Black",brand:"mgraham",pigment:"PBk9",hex:"#201810",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Warm black."},
@@ -1474,7 +1531,7 @@ const COLORS=[
   {group:"Greens",name:"Viridian",brand:"qor",pigment:"PG18",hex:"#307858",lf:"I",transparency:"T",gran:false,single:true,grade:"artist",notes:"Classic cool green."},
   {group:"Greens",name:"Sap Green",brand:"qor",pigment:"PG36+PY110",hex:"#487830",lf:"I",transparency:"T",gran:false,single:false,grade:"artist",notes:"Foliage green."},
   {group:"Neutrals",name:"Raw Umber",brand:"qor",pigment:"PBr7",hex:"#786040",lf:"I",transparency:"ST",gran:true,single:true,grade:"artist",notes:"Granulating earth."},
-  {group:"Neutrals",name:"Burnt Umber",brand:"qor",pigment:"PBr7",hex:"#582018",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Warm brown."},
+  {group:"Neutrals",name:"Burnt Umber",brand:"qor",pigment:"PBr7",hex:"#6a3818",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Warm brown."},
   {group:"Blacks",name:"Payne's Gray",brand:"qor",pigment:"PBk19+PB15",hex:"#383848",lf:"I",transparency:"T",gran:false,single:false,grade:"artist",notes:"Blue-grey neutral."},
   {group:"Blacks",name:"Lamp Black",brand:"qor",pigment:"PBk6",hex:"#181818",lf:"I",transparency:"T",gran:false,single:true,grade:"artist",notes:"Cool intense."},
   // ── UTRECHT ──
@@ -1498,7 +1555,7 @@ const COLORS=[
   {group:"Greens",name:"Sap Green",brand:"utrecht",pigment:"PG36+PY3",hex:"#487830",lf:"II",transparency:"T",gran:false,single:false,grade:"artist",notes:"Foliage green."},
   {group:"Greens",name:"Viridian",brand:"utrecht",pigment:"PG18",hex:"#307858",lf:"I",transparency:"T",gran:false,single:true,grade:"artist",notes:"Classic green."},
   {group:"Neutrals",name:"Raw Umber",brand:"utrecht",pigment:"PBr7",hex:"#786040",lf:"I",transparency:"ST",gran:true,single:true,grade:"artist",notes:"Classic earth."},
-  {group:"Neutrals",name:"Burnt Umber",brand:"utrecht",pigment:"PBr7",hex:"#582018",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Warm workhorse."},
+  {group:"Neutrals",name:"Burnt Umber",brand:"utrecht",pigment:"PBr7",hex:"#6a3818",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Warm workhorse."},
   {group:"Blacks",name:"Payne's Gray",brand:"utrecht",pigment:"PB29+PBk7",hex:"#303840",lf:"I",transparency:"T",gran:false,single:false,grade:"artist",notes:"Reliable blue-grey."},
   {group:"Blacks",name:"Ivory Black",brand:"utrecht",pigment:"PBk9",hex:"#201810",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Warm black."},
   {group:"Blacks",name:"Lamp Black",brand:"utrecht",pigment:"PBk6",hex:"#181818",lf:"I",transparency:"T",gran:false,single:true,grade:"artist",notes:"Cool intense."},
@@ -1523,7 +1580,7 @@ const COLORS=[
   {group:"Greens",name:"Viridian",brand:"blockx",pigment:"PG18",hex:"#2c7858",lf:"I",transparency:"T",gran:false,single:true,grade:"artist",notes:"Classic cool green."},
   {group:"Greens",name:"Phthalo Green",brand:"blockx",pigment:"PG7",hex:"#006048",lf:"I",transparency:"T",gran:false,single:true,grade:"artist",notes:"Powerful stainer."},
   {group:"Neutrals",name:"Raw Umber",brand:"blockx",pigment:"PBr7",hex:"#786040",lf:"I",transparency:"ST",gran:true,single:true,grade:"artist",notes:"Belgian earth."},
-  {group:"Neutrals",name:"Burnt Umber",brand:"blockx",pigment:"PBr7",hex:"#582018",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Warm brown."},
+  {group:"Neutrals",name:"Burnt Umber",brand:"blockx",pigment:"PBr7",hex:"#6a3818",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Warm brown."},
   {group:"Blacks",name:"Ivory Black",brand:"blockx",pigment:"PBk9",hex:"#201810",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Warm black. Belgian formula."},
   {group:"Blacks",name:"Payne's Gray",brand:"blockx",pigment:"PB29+PBk9",hex:"#303848",lf:"I",transparency:"T",gran:false,single:false,grade:"artist",notes:"Blue-grey neutral."},
   // ── MIJELLO MISSION GOLD ──
@@ -1550,7 +1607,7 @@ const COLORS=[
   {group:"Greens",name:"Sap Green",brand:"mijello",pigment:"PG36+PY110",hex:"#487830",lf:"I",transparency:"T",gran:false,single:false,grade:"artist",notes:"Foliage green."},
   {group:"Greens",name:"Chromium Oxide Green",brand:"mijello",pigment:"PG17",hex:"#4a6838",lf:"I",transparency:"O",gran:false,single:true,grade:"artist",notes:"Muted earthy opaque."},
   {group:"Neutrals",name:"Raw Umber",brand:"mijello",pigment:"PBr7",hex:"#786040",lf:"I",transparency:"ST",gran:true,single:true,grade:"artist",notes:"Classic earth."},
-  {group:"Neutrals",name:"Burnt Umber",brand:"mijello",pigment:"PBr7",hex:"#582018",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Warm brown."},
+  {group:"Neutrals",name:"Burnt Umber",brand:"mijello",pigment:"PBr7",hex:"#6a3818",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Warm brown."},
   {group:"Blacks",name:"Ivory Black",brand:"mijello",pigment:"PBk9",hex:"#201810",lf:"I",transparency:"ST",gran:false,single:true,grade:"artist",notes:"Warm black."},
   {group:"Blacks",name:"Payne's Gray",brand:"mijello",pigment:"PB29+PBk9",hex:"#303848",lf:"I",transparency:"T",gran:false,single:false,grade:"artist",notes:"Blue-grey neutral."},
   {group:"Blacks",name:"Lamp Black",brand:"mijello",pigment:"PBk6",hex:"#181818",lf:"I",transparency:"T",gran:false,single:true,grade:"artist",notes:"Cool intense."},
@@ -1569,7 +1626,7 @@ const COLORS=[
   {group:"Oranges",name:"Orange",brand:"schpirerr-farben",pigment:"PO73",hex:"#e86010",lf:"I",transparency:"T",gran:false,single:true,grade:"student",notes:"Vivid warm orange."},
   {group:"Oranges",name:"Orange Red Shade",brand:"schpirerr-farben",pigment:"PO73+PR254",hex:"#e04820",lf:"I",transparency:"ST",gran:false,single:false,grade:"student",notes:"Warm red-orange."},
   {group:"Oranges",name:"Burnt Sienna",brand:"schpirerr-farben",pigment:"PBr7",hex:"#9c3818",lf:"I",transparency:"ST",gran:true,single:true,grade:"student",notes:"Classic warm earth."},
-  {group:"Oranges",name:"Burnt Umber",brand:"schpirerr-farben",pigment:"PBr7",hex:"#582018",lf:"I",transparency:"ST",gran:false,single:true,grade:"student",notes:"Rich warm brown."},
+  {group:"Oranges",name:"Burnt Umber",brand:"schpirerr-farben",pigment:"PBr7",hex:"#6a3818",lf:"I",transparency:"ST",gran:false,single:true,grade:"student",notes:"Rich warm brown."},
   {group:"Oranges",name:"Umber",brand:"schpirerr-farben",pigment:"PBr7",hex:"#6a4828",lf:"I",transparency:"ST",gran:true,single:true,grade:"student",notes:"Mid-tone umber."},
   {group:"Oranges",name:"Brown",brand:"schpirerr-farben",pigment:"PBr7+PR101",hex:"#7a3820",lf:"I",transparency:"ST",gran:false,single:false,grade:"student",notes:"General warm brown."},
   {group:"Oranges",name:"Cotswold's Brown",brand:"schpirerr-farben",pigment:"PBr7+PY43",hex:"#906030",lf:"I",transparency:"ST",gran:true,single:false,grade:"student",notes:"Warm earthy brown."},
@@ -1774,10 +1831,10 @@ function renderSwatchView(pal,content){
   // Sort bar HTML
   const sortBar=`<div class="palette-sort-bar">
     <button class="sort-btn${palSortMode==='custom'?' active':''}" onclick="setPalSort('custom','${pal.id}')">✦ Custom</button>
-    <button class="sort-btn${palSortMode==='hue'?' active':''}" onclick="setPalSort('hue','${pal.id}')">🌈 By Hue</button>
-    <button class="sort-btn${palSortMode==='lf'?' active':''}" onclick="setPalSort('lf','${pal.id}')">⭐ By Lightfastness</button>
-    <button class="sort-btn${palSortMode==='brand'?' active':''}" onclick="setPalSort('brand','${pal.id}')">🏷 By Brand</button>
-    <button class="sort-btn${palSortMode==='transparency'?' active':''}" onclick="setPalSort('transparency','${pal.id}')">◐ By Opacity</button>
+    <button class="sort-btn${palSortMode==='hue'?' active':''}" onclick="setPalSort('hue','${pal.id}')">🌈 <span class="sb-by">By </span>Hue</button>
+    <button class="sort-btn${palSortMode==='lf'?' active':''}" onclick="setPalSort('lf','${pal.id}')">⭐ <span class="sb-by">By </span><span class="sb-long">Lightfastness</span><span class="sb-short">LF</span></button>
+    <button class="sort-btn${palSortMode==='brand'?' active':''}" onclick="setPalSort('brand','${pal.id}')">🏷 <span class="sb-by">By </span>Brand</button>
+    <button class="sort-btn${palSortMode==='transparency'?' active':''}" onclick="setPalSort('transparency','${pal.id}')">◐ <span class="sb-by">By </span>Opacity</button>
     <span class="sort-label">${pal.colors.length} colors${palSortMode==='custom'?' · double-click card to drag':''}</span>
   </div>`;
 
@@ -1823,7 +1880,10 @@ function renderSwatchView(pal,content){
     entries.forEach(e=>{
       if(!e.isIntersecting) return;
       const cv=e.target;
-      const idx=parseInt(cv.dataset.idx);
+      // data-idx lives on the parent .sg-card, not the canvas itself.
+      const card=cv.closest('.sg-card');
+      if(!card) return;
+      const idx=parseInt(card.dataset.idx);
       const c=pal.colors[idx];
       if(!c) return;
       const W=cv.parentElement.offsetWidth||120;
