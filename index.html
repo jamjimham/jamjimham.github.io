@@ -40,7 +40,7 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
 .page{display:none;flex:1;overflow:hidden;min-height:0;}
 .page.active{display:flex;min-height:0;}
 #page-palettes{flex-direction:row;}
-#page-shopping,#page-harmony,#page-backup,#page-recommended{flex-direction:column;}
+#page-shopping,#page-harmony,#page-backup,#page-recommended,#page-valuescale{flex-direction:column;}
 
 .palettes-sidebar{width:240px;flex-shrink:0;background:var(--paper2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
 .ps-header{padding:1rem 1rem 0.75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
@@ -411,7 +411,7 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
 ══════════════════════════════════════ */
 #valuescale-page{
   display:flex;flex-direction:column;gap:1.5rem;
-  max-width:100%;
+  background:var(--paper);
 }
 #valuescale-page>*{flex-shrink:0;}
 
@@ -1020,8 +1020,8 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
   </div>
 
   <!-- ══ PAGE: VALUE SCALE ══ -->
-  <div class="page" id="page-valuescale" style="overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;display:block;padding:1.25rem;background:var(--paper);">
-    <div id="valuescale-page"></div>
+  <div class="page" id="page-valuescale">
+    <div class="shop-page" id="valuescale-page"></div>
   </div>
 
   <!-- ══ PAGE: BACKUP / IMPORT-EXPORT ══ -->
