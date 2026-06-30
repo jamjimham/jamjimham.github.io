@@ -36,11 +36,32 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
 .nav-tab.active{color:var(--gold2);border-bottom-color:var(--gold2);}
 .nav-tab .tab-icon{font-size:0.88rem;}
 
+.nav-more-wrap{position:relative;height:100%;}
+.nav-more-btn{position:relative;}
+.nav-more-menu{
+  display:none;position:absolute;top:100%;right:0;
+  background:var(--ink2);border:1px solid rgba(255,255,255,0.1);
+  border-radius:0 0 var(--r-md) var(--r-md);
+  box-shadow:0 12px 32px rgba(0,0,0,0.35);
+  min-width:200px;z-index:600;padding:4px;
+}
+.nav-more-menu.open{display:block;}
+.nav-more-menu button{
+  display:flex;align-items:center;gap:0.55rem;width:100%;
+  background:none;border:none;color:rgba(250,246,239,0.75);
+  font-family:'Crimson Pro',serif;font-size:0.82rem;
+  padding:0.5rem 0.7rem;border-radius:var(--r-sm);
+  cursor:pointer;text-align:left;transition:background 0.12s,color 0.12s;
+}
+.nav-more-menu button:hover{background:rgba(255,255,255,0.08);color:var(--gold2);}
+.nav-more-menu button.active{color:var(--gold2);background:rgba(201,152,48,0.12);}
+.nav-more-sep{height:1px;background:rgba(255,255,255,0.08);margin:4px 6px;}
+
 .app{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0;}
 .page{display:none;flex:1;overflow:hidden;min-height:0;}
 .page.active{display:flex;min-height:0;}
 #page-palettes{flex-direction:row;}
-#page-shopping,#page-harmony,#page-backup,#page-recommended,#page-valuescale{flex-direction:column;}
+#page-shopping,#page-harmony,#page-backup,#page-recommended{flex-direction:column;}
 
 .palettes-sidebar{width:240px;flex-shrink:0;background:var(--paper2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
 .ps-header{padding:1rem 1rem 0.75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
@@ -63,14 +84,17 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
 .empty-palettes{padding:2.5rem 1.2rem;text-align:center;font-style:italic;color:var(--ink3);font-size:0.81rem;line-height:1.8;}
 
 .palette-main{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0;}
-.palette-header{padding:0.85rem 1.25rem;border-bottom:1px solid var(--border);background:var(--paper);display:flex;align-items:center;gap:0.8rem;flex-shrink:0;flex-wrap:wrap;}
+.palette-header{padding:0.85rem 1.25rem 0.65rem;border-bottom:1px solid var(--border2);background:var(--paper);display:flex;align-items:center;gap:0.8rem;flex-shrink:0;}
 .palette-name-input{font-family:'IM Fell English',serif;font-size:1.1rem;border:none;background:transparent;color:var(--ink);outline:none;flex:1;min-width:140px;border-bottom:1.5px solid transparent;transition:border-color 0.15s;padding-bottom:1px;}
 .palette-name-input:focus{border-bottom-color:var(--gold);}
-.view-tabs{display:flex;gap:0.3rem;margin-left:auto;}
-.view-tab{padding:0.28rem 0.7rem;border:1px solid var(--border);border-radius:var(--r-sm);background:transparent;font-family:'Crimson Pro',serif;font-size:0.72rem;color:var(--ink3);cursor:pointer;transition:all 0.14s;}
-.view-tab:hover{border-color:var(--ink3);color:var(--ink2);}
+.palette-header-row2{padding:0 1.25rem 0.7rem;border-bottom:1px solid var(--border);background:var(--paper);flex-shrink:0;}
+.view-tabs{display:flex;gap:0.4rem;}
+.view-tab{padding:0.4rem 0.85rem;border:1px solid var(--border);border-radius:var(--r-sm);background:transparent;font-family:'Crimson Pro',serif;font-size:0.78rem;color:var(--ink2);cursor:pointer;transition:all 0.14s;display:flex;align-items:center;gap:0.4rem;}
+.view-tab .vt-icon{font-size:0.9rem;opacity:0.7;}
+.view-tab:hover{border-color:var(--gold);color:var(--ink);background:var(--paper2);}
 .view-tab.active{background:var(--ink);color:var(--gold2);border-color:var(--ink);}
-.btn-add-colors{background:var(--sage);color:white;border:none;padding:0.3rem 0.85rem;border-radius:var(--r-sm);font-family:'Crimson Pro',serif;font-size:0.76rem;cursor:pointer;transition:background 0.15s;letter-spacing:0.02em;}
+.view-tab.active .vt-icon{opacity:1;}
+.btn-add-colors{background:var(--sage);color:white;border:none;padding:0.3rem 0.85rem;border-radius:var(--r-sm);font-family:'Crimson Pro',serif;font-size:0.76rem;cursor:pointer;transition:background 0.15s;letter-spacing:0.02em;flex-shrink:0;}
 .btn-add-colors:hover{background:var(--sage2);}
 .palette-view{flex:1;overflow-y:auto;overflow-x:hidden;padding:1.25rem;-webkit-overflow-scrolling:touch;}
 .palette-view::-webkit-scrollbar{width:4px;}
@@ -90,6 +114,21 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
 .sg-cam{position:absolute;bottom:7px;left:7px;background:rgba(0,0,0,0.35);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:none;color:white;border-radius:50%;width:26px;height:26px;font-size:0.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.14s;z-index:3;}
 .sg-card:hover .sg-cam{opacity:1;}
 @media(hover:none){.sg-del,.sg-cam{opacity:0.8;}}
+.sg-handle{
+  position:absolute;top:7px;left:7px;z-index:4;
+  background:rgba(0,0,0,0.35);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  border:none;color:rgba(255,255,255,0.9);
+  border-radius:6px;width:26px;height:22px;
+  font-size:0.85rem;line-height:1;letter-spacing:-1px;
+  cursor:grab;display:flex;align-items:center;justify-content:center;
+  touch-action:none;
+}
+.sg-handle:active{cursor:grabbing;}
+.sg-card.drag-ready .sg-handle{background:var(--gold2);color:var(--ink);}
+.sg-card.drag-ready{box-shadow:0 0 0 2px var(--gold2),0 8px 24px var(--shadow2);}
+.sg-card.dragging{opacity:0.4;}
+.sg-card.drag-over{outline:2px dashed var(--rust);outline-offset:-2px;}
 .sg-photo-toggle{position:absolute;bottom:7px;right:36px;background:rgba(0,0,0,0.35);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:none;color:white;border-radius:20px;padding:3px 8px;font-size:0.58rem;cursor:pointer;display:none;align-items:center;gap:3px;opacity:0;transition:opacity 0.14s;z-index:3;white-space:nowrap;}
 .sg-photo-toggle.has-photo{display:flex;}
 .sg-card:hover .sg-photo-toggle{opacity:1;}
@@ -314,6 +353,35 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
 .rp-ratio{font-size:0.62rem;color:var(--ink3);min-width:22px;text-align:right;font-family:'Courier New',monospace;}
 .recipe-tag{display:inline-block;font-size:0.59rem;padding:2px 6px;border-radius:20px;background:var(--paper2);color:var(--ink3);margin-top:0.4rem;margin-right:0.2rem;}
 
+.recipe-notice{
+  display:flex;gap:0.6rem;align-items:flex-start;
+  background:rgba(176,125,32,0.08);border:1px solid rgba(176,125,32,0.25);
+  border-radius:var(--r-md);padding:0.7rem 0.9rem;
+  font-size:0.78rem;color:var(--ink2);line-height:1.55;
+  margin-bottom:1rem;max-width:780px;
+}
+.recipe-notice-icon{font-size:1rem;color:var(--gold);flex-shrink:0;line-height:1.4;}
+.recipe-notice strong{color:var(--ink);font-weight:600;}
+.rp-sub-btn{
+  background:none;border:1px solid var(--border);border-radius:4px;
+  color:var(--ink3);font-size:0.62rem;cursor:pointer;
+  width:18px;height:18px;flex-shrink:0;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.12s;
+}
+.rp-sub-btn:hover{border-color:var(--gold);color:var(--gold);}
+.rp-sub-result{display:none;}
+.rp-sub-result.open{display:block;margin:2px 0 4px;}
+.rp-sub-card{
+  display:flex;align-items:center;gap:0.5rem;
+  background:var(--paper2);border-radius:var(--r-sm);
+  padding:0.35rem 0.5rem;font-size:0.68rem;
+}
+.rp-sub-swatch{width:22px;height:22px;border-radius:4px;flex-shrink:0;border:1px solid rgba(0,0,0,0.08);}
+.rp-sub-info{display:flex;flex-direction:column;line-height:1.3;}
+.rp-sub-info strong{font-family:'IM Fell English',serif;font-size:0.72rem;font-weight:400;color:var(--ink);}
+.rp-sub-info span{color:var(--ink3);font-size:0.62rem;}
+
 .mobile-tabbar{display:none;position:fixed;bottom:0;left:0;right:0;z-index:500;}
 .mobile-nav-drawer{background:var(--ink);border-top:1px solid rgba(255,255,255,0.07);max-height:0;overflow:hidden;transition:max-height 0.3s cubic-bezier(0.4,0,0.2,1);}
 .mobile-nav-drawer.open{max-height:400px;}
@@ -323,6 +391,11 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
 .mobile-nav-item.active{color:var(--gold2);background:rgba(201,152,48,0.09);}
 .mobile-nav-item .mni{font-size:1.45rem;line-height:1;}
 .mobile-nav-item .mnl{font-size:0.67rem;letter-spacing:0.02em;white-space:nowrap;font-weight:500;}
+.mobile-nav-section-label{
+  font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:rgba(250,246,239,0.35);padding:10px 14px 4px;
+  background:var(--ink);
+}
 .mobile-bar{display:flex;align-items:stretch;background:var(--ink);border-top:2px solid var(--gold);padding-bottom:env(safe-area-inset-bottom);}
 .mobile-bar-current{flex:1;display:flex;align-items:center;gap:0.65rem;padding:0 1.2rem;min-height:58px;pointer-events:none;}
 .mbc-icon{font-size:1.25rem;}
@@ -369,12 +442,12 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
   .sg-swatch{height:100px;}
   .add-overlay button{min-height:44px;font-size:0.85rem;padding:0 1rem;}
   .add-overlay select{font-size:0.8rem;padding:0.35rem 0.5rem;max-width:140px;}
-  .palette-header{flex-wrap:wrap;gap:0.5rem;padding:0.75rem 0.9rem;}
-  .palette-name-input{font-size:16px!important;min-width:100%;}
+  .palette-header{flex-wrap:wrap;gap:0.5rem;padding:0.75rem 0.9rem 0.6rem;}
+  .palette-name-input{font-size:16px!important;min-width:100%;order:1;}
+  .btn-add-colors{width:100%;justify-content:center;display:flex;align-items:center;order:2;}
+  .palette-header-row2{padding:0 0.9rem 0.6rem;}
   .view-tabs{width:100%;justify-content:stretch;}
   .view-tab{flex:1;text-align:center;justify-content:center;}
-  /* Make the primary action full-width on mobile rather than orphaned */
-  .btn-add-colors{width:100%;justify-content:center;display:flex;align-items:center;}
   /* Sort tabs: hide "By " prefix and use short form for Lightfastness so all five fit one row */
   .sb-by{display:none;}
   .sb-long{display:none;}
@@ -406,142 +479,6 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
   .sidebar-overlay{display:none!important;}
 }
 
-/* ══════════════════════════════════════
-   VALUE SCALE PAGE
-══════════════════════════════════════ */
-#valuescale-page{
-  display:flex;flex-direction:column;gap:1.5rem;
-  background:var(--paper);
-}
-#valuescale-page>*{flex-shrink:0;}
-
-.vs-header{max-width:680px;}
-.vs-title{font-family:'IM Fell English',serif;font-size:1.4rem;color:var(--ink);margin-bottom:0.3rem;}
-.vs-subtitle{font-size:0.84rem;color:var(--ink2);line-height:1.6;}
-
-/* ── Main gradient bar ── */
-.vs-gradient-section{max-width:680px;}
-.vs-section-title{
-  font-family:'IM Fell English',serif;font-size:1rem;
-  color:var(--ink);margin-bottom:0.65rem;
-  padding-bottom:0.3rem;border-bottom:1px solid var(--border);
-}
-.vs-gradient-bar{
-  height:80px;border-radius:var(--r-md);
-  background:linear-gradient(to right,#000000,#ffffff);
-  box-shadow:0 2px 10px var(--shadow2);
-  position:relative;overflow:hidden;
-}
-.vs-gradient-bar canvas{position:absolute;inset:0;width:100%;height:100%;}
-.vs-gradient-labels{
-  display:flex;justify-content:space-between;
-  margin-top:0.4rem;font-size:0.68rem;color:var(--ink3);
-  font-family:'Crimson Pro',serif;font-style:italic;
-}
-
-/* ── Numbered step scale ── */
-.vs-steps-section{max-width:680px;}
-.vs-steps{display:flex;border-radius:var(--r-md);overflow:hidden;box-shadow:0 2px 10px var(--shadow2);}
-.vs-step{
-  flex:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:flex-end;
-  padding-bottom:0.5rem;min-height:90px;
-  position:relative;cursor:default;
-  transition:flex 0.2s;
-}
-.vs-step-num{
-  font-family:'IM Fell English',serif;font-size:0.75rem;
-  font-weight:400;line-height:1;
-  /* auto-switch black/white based on step darkness */
-}
-.vs-step-hex{
-  font-family:'Courier New',monospace;font-size:0.45rem;
-  margin-top:2px;opacity:0.6;display:none;
-}
-.vs-step:hover .vs-step-hex{display:block;}
-.vs-step:hover{flex:1.6;}
-
-/* ── Zone reference ── */
-.vs-zones-section{max-width:680px;}
-.vs-zones{display:flex;flex-direction:column;gap:0.5rem;}
-.vs-zone{
-  display:flex;align-items:stretch;
-  border-radius:var(--r-md);overflow:hidden;
-  border:1px solid var(--border);
-  box-shadow:0 2px 6px var(--shadow);
-}
-.vs-zone-swatch{
-  width:72px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-}
-.vs-zone-num{
-  font-family:'IM Fell English',serif;font-size:1.3rem;
-  line-height:1;
-}
-.vs-zone-body{
-  flex:1;padding:0.65rem 0.85rem;background:white;
-  display:flex;flex-direction:column;justify-content:center;gap:0.15rem;
-}
-.vs-zone-label{
-  font-family:'IM Fell English',serif;font-size:0.9rem;color:var(--ink);
-}
-.vs-zone-desc{font-size:0.76rem;color:var(--ink2);line-height:1.5;}
-.vs-zone-painting{font-size:0.7rem;color:var(--ink3);font-style:italic;margin-top:0.1rem;}
-
-/* ── Neutral paint swatches from the color database ── */
-.vs-paints-section{max-width:680px;}
-.vs-paints-intro{font-size:0.8rem;color:var(--ink2);margin-bottom:0.75rem;line-height:1.55;}
-.vs-paint-row{
-  display:flex;align-items:center;gap:0.7rem;
-  padding:0.5rem 0.75rem;
-  background:white;border:1px solid var(--border);
-  border-radius:var(--r-md);margin-bottom:0.4rem;
-  box-shadow:0 2px 5px var(--shadow);
-}
-.vs-paint-swatch{
-  width:44px;height:44px;border-radius:var(--r-sm);
-  flex-shrink:0;border:1px solid rgba(0,0,0,0.07);
-  position:relative;overflow:hidden;
-}
-.vs-paint-swatch canvas{position:absolute;inset:0;width:100%;height:100%;}
-.vs-paint-info{flex:1;min-width:0;}
-.vs-paint-name{font-family:'IM Fell English',serif;font-size:0.85rem;line-height:1.2;}
-.vs-paint-meta{font-size:0.62rem;color:var(--ink3);font-family:'Courier New',monospace;letter-spacing:0.02em;margin-top:2px;}
-.vs-paint-brand{font-size:0.65rem;color:var(--ink3);font-style:italic;}
-.vs-value-indicator{
-  flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;
-}
-.vs-value-dot{
-  width:28px;height:28px;border-radius:50%;
-  border:2px solid rgba(0,0,0,0.08);flex-shrink:0;
-}
-.vs-value-label{font-size:0.6rem;color:var(--ink3);font-family:'Crimson Pro',serif;}
-
-/* ── Tips section ── */
-.vs-tips-section{max-width:680px;}
-.vs-tips{
-  background:white;border:1px solid var(--border2);
-  border-radius:var(--r-md);padding:1rem 1.1rem;
-  box-shadow:0 2px 6px var(--shadow);
-}
-.vs-tip{
-  display:flex;gap:0.75rem;align-items:flex-start;
-  padding:0.55rem 0;border-bottom:1px solid var(--border2);
-}
-.vs-tip:last-child{border-bottom:none;padding-bottom:0;}
-.vs-tip:first-child{padding-top:0;}
-.vs-tip-icon{font-size:1.1rem;flex-shrink:0;line-height:1.4;}
-.vs-tip-text{font-size:0.8rem;color:var(--ink2);line-height:1.6;}
-.vs-tip-text strong{color:var(--ink);font-weight:600;}
-
-@media(max-width:700px){
-  .vs-steps{border-radius:var(--r-sm);}
-  .vs-step{min-height:72px;}
-  .vs-gradient-bar{height:60px;}
-  .vs-zone-swatch{width:56px;}
-  .vs-zone-body{padding:0.5rem 0.7rem;}
-}
-
 /* ── DRAG & DROP ── */
 .sg-card{cursor:pointer;user-select:none;-webkit-user-select:none;}
 .sg-card.drag-ready{cursor:grab;outline:2px solid var(--gold);outline-offset:2px;box-shadow:0 0 0 4px rgba(184,134,42,0.2);}
@@ -561,10 +498,12 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
 .sg-note-input::placeholder{color:var(--ink3);font-style:italic;}
 
 /* ── DUPLICATE / PALETTE ACTIONS ── */
-.palette-item-actions{display:flex;gap:2px;flex-shrink:0;}
+.palette-item-actions{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:opacity 0.12s;}
+.palette-item:hover .palette-item-actions{opacity:1;}
+@media(hover:none){.palette-item-actions{opacity:0.7;}}
 .palette-item-btn{
   background:none;border:none;color:var(--ink3);cursor:pointer;
-  font-size:0.72rem;padding:2px 4px;border-radius:2px;
+  font-size:0.78rem;padding:3px 5px;border-radius:4px;
   transition:all 0.13s;
 }
 .palette-item-btn:hover{background:rgba(30,23,16,0.08);color:var(--ink);}
@@ -696,6 +635,42 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
 .shop-page::-webkit-scrollbar{width:5px;}
 .shop-page::-webkit-scrollbar-thumb{background:rgba(30,23,16,0.2);border-radius:3px;}
 .shop-stats{display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;padding:0.6rem 0.9rem;background:white;border:1px solid var(--border2);border-radius:5px;font-size:0.8rem;}
+.shop-list-filter{display:flex;gap:0.3rem;flex-wrap:wrap;margin:0.6rem 0;}
+.cost-disclaimer{
+  font-size:0.74rem;color:var(--rust);font-style:italic;
+  background:rgba(155,58,26,0.06);border:1px solid rgba(155,58,26,0.18);
+  border-radius:var(--r-sm);padding:0.5rem 0.7rem;line-height:1.5;
+}
+.cost-disclaimer strong{font-style:normal;}
+
+.backup-reminder-banner{
+  display:none;align-items:center;gap:0.6rem;
+  background:var(--ink);color:var(--paper);
+  padding:0.55rem 1rem;font-size:0.78rem;
+  border-bottom:2px solid var(--gold2);
+  flex-shrink:0;
+}
+.backup-reminder-banner.show{display:flex;}
+.brb-icon{font-size:1rem;flex-shrink:0;}
+.brb-text{flex:1;line-height:1.4;}
+.brb-action{
+  background:var(--gold2);color:var(--ink);border:none;
+  padding:0.32rem 0.8rem;border-radius:var(--r-sm);
+  font-family:'Crimson Pro',serif;font-size:0.76rem;font-weight:600;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+  transition:background 0.13s;
+}
+.brb-action:hover{background:var(--gold-light);}
+.brb-dismiss{
+  background:none;border:none;color:rgba(250,246,239,0.5);
+  cursor:pointer;font-size:0.8rem;padding:2px 4px;flex-shrink:0;
+  transition:color 0.13s;
+}
+.brb-dismiss:hover{color:var(--paper);}
+@media(max-width:700px){
+  .brb-text{font-size:0.72rem;}
+  .brb-action{padding:0.28rem 0.6rem;font-size:0.7rem;}
+}
 .shop-stat{color:var(--ink2);}
 .shop-stat strong{color:var(--ink);font-size:0.9rem;}
 .shop-stat-sep{color:var(--border);font-size:0.9rem;}
@@ -802,21 +777,32 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
   </div>
 </div>
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebars()"></div>
+<div class="backup-reminder-banner" id="backup-reminder-banner">
+  <span class="brb-icon">🛟</span>
+  <span class="brb-text">You've made several changes since your last backup. Keep your palettes safe.</span>
+  <button class="brb-action" onclick="goToBackupPage()">Back up now</button>
+  <button class="brb-dismiss" onclick="dismissBackupReminder()" title="Dismiss">✕</button>
+</div>
 <nav class="topnav">
-  <div class="topnav-brand">My <em>Palette Studio</em></div>
+  <div class="topnav-brand" id="topnav-brand-text" ondblclick="editAppName()" title="Double-click to rename"><span id="app-name-prefix">My</span> <em>Palette Studio</em></div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('palettes',this)"><span class="tab-icon">🎨</span> My Palettes</button>
     <button class="nav-tab" onclick="showPage('reference',this)"><span class="tab-icon">📖</span> Brand Reference</button>
-    <button class="nav-tab" onclick="showPage('pigments',this)"><span class="tab-icon">🔬</span> Pigment Compare</button>
-    <button class="nav-tab" onclick="showPage('recommended',this)"><span class="tab-icon">⭐</span> Starter Palettes</button>
-    <button class="nav-tab" onclick="showPage('opacity',this)"><span class="tab-icon">◐</span> Opacity Chart</button>
-    <button class="nav-tab" onclick="showPage('tracker',this)"><span class="tab-icon">🎯</span> Paint Tracker</button>
-    <button class="nav-tab" onclick="showPage('cost',this)"><span class="tab-icon">💰</span> Cost Estimator</button>
-    <button class="nav-tab" onclick="showPage('recipes',this)"><span class="tab-icon">🧪</span> Mix Recipes</button>
-    <button class="nav-tab" onclick="showPage('shopping',this)"><span class="tab-icon">🛒</span> Shopping List</button>
     <button class="nav-tab" onclick="showPage('harmony',this)"><span class="tab-icon">🎡</span> Harmony</button>
-    <button class="nav-tab" onclick="showPage('valuescale',this)"><span class="tab-icon">◑</span> Value Scale</button>
-    <button class="nav-tab" onclick="showPage('backup',this)"><span class="tab-icon">💾</span> Backup</button>
+    <button class="nav-tab" onclick="showPage('shopping',this)"><span class="tab-icon">🛒</span> Shopping List</button>
+    <div class="nav-more-wrap">
+      <button class="nav-tab nav-more-btn" onclick="toggleNavMore(event)"><span class="tab-icon">⋯</span> More</button>
+      <div class="nav-more-menu" id="nav-more-menu">
+        <button onclick="showPage('pigments',null);closeNavMore();syncNavTabActive('pigments');" data-page="pigments"><span class="tab-icon">🔬</span> Pigment Compare</button>
+        <button onclick="showPage('recommended',null);closeNavMore();syncNavTabActive('recommended');" data-page="recommended"><span class="tab-icon">⭐</span> Starter Palettes</button>
+        <button onclick="showPage('opacity',null);closeNavMore();syncNavTabActive('opacity');" data-page="opacity"><span class="tab-icon">◐</span> Opacity Chart</button>
+        <button onclick="showPage('tracker',null);closeNavMore();syncNavTabActive('tracker');" data-page="tracker"><span class="tab-icon">🎯</span> Paint Tracker</button>
+        <button onclick="showPage('cost',null);closeNavMore();syncNavTabActive('cost');" data-page="cost"><span class="tab-icon">💰</span> Cost Estimator</button>
+        <button onclick="showPage('recipes',null);closeNavMore();syncNavTabActive('recipes');" data-page="recipes"><span class="tab-icon">🧪</span> Mix Recipes</button>
+        <div class="nav-more-sep"></div>
+        <button onclick="showPage('backup',null);closeNavMore();syncNavTabActive('backup');" data-page="backup"><span class="tab-icon">🛟</span> Backup & Restore</button>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -909,7 +895,7 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
             <option value="37">37ml</option>
           </select>
         </div>
-        <p style="font-size:0.72rem;color:var(--ink3);font-style:italic;">Estimated retail prices — actual prices vary by retailer. Based on typical MSRP for artist-grade tubes.</p>
+        <p class="cost-disclaimer">⚠ Estimated retail prices from <strong>early 2025</strong> MSRP data — actual prices vary by retailer and change over time. Treat these as rough relative comparisons, not current quotes.</p>
       </div>
       <div class="cost-wrap" id="cost-content">
         <p style="text-align:center;padding:3rem;color:var(--ink3);font-style:italic;">Select a palette above to see cost estimates.</p>
@@ -1019,11 +1005,6 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
     </div>
   </div>
 
-  <!-- ══ PAGE: VALUE SCALE ══ -->
-  <div class="page" id="page-valuescale">
-    <div class="shop-page" id="valuescale-page"></div>
-  </div>
-
   <!-- ══ PAGE: BACKUP / IMPORT-EXPORT ══ -->
   <div class="page" id="page-backup">
     <div class="backup-page">
@@ -1065,20 +1046,22 @@ body{background:var(--paper);font-family:'Crimson Pro',Georgia,serif;color:var(-
 <nav class="mobile-tabbar" id="mobile-tabbar">
   <!-- Expandable nav drawer (slides up when open) -->
   <div class="mobile-nav-drawer" id="mobile-nav-drawer">
+    <div class="mobile-nav-section-label">Paint &amp; Plan</div>
     <div class="mobile-nav-grid">
       <button class="mobile-nav-item" data-page="palettes" onclick="mobileNavDrawer('palettes',this)"><span class="mni">🎨</span><span class="mnl">Palettes</span></button>
       <button class="mobile-nav-item" data-page="reference" onclick="mobileNavDrawer('reference',this)"><span class="mni">📖</span><span class="mnl">Reference</span></button>
+      <button class="mobile-nav-item" data-page="harmony" onclick="mobileNavDrawer('harmony',this)"><span class="mni">🎡</span><span class="mnl">Harmony</span></button>
+      <button class="mobile-nav-item" data-page="shopping" onclick="mobileNavDrawer('shopping',this)"><span class="mni">🛒</span><span class="mnl">Shopping</span></button>
+    </div>
+    <div class="mobile-nav-section-label">More Tools</div>
+    <div class="mobile-nav-grid">
       <button class="mobile-nav-item" data-page="pigments" onclick="mobileNavDrawer('pigments',this)"><span class="mni">🔬</span><span class="mnl">Pigments</span></button>
       <button class="mobile-nav-item" data-page="recommended" onclick="mobileNavDrawer('recommended',this)"><span class="mni">⭐</span><span class="mnl">Starters</span></button>
       <button class="mobile-nav-item" data-page="opacity" onclick="mobileNavDrawer('opacity',this)"><span class="mni">◐</span><span class="mnl">Opacity</span></button>
       <button class="mobile-nav-item" data-page="tracker" onclick="mobileNavDrawer('tracker',this)"><span class="mni">🎯</span><span class="mnl">Tracker</span></button>
       <button class="mobile-nav-item" data-page="cost" onclick="mobileNavDrawer('cost',this)"><span class="mni">💰</span><span class="mnl">Cost</span></button>
       <button class="mobile-nav-item" data-page="recipes" onclick="mobileNavDrawer('recipes',this)"><span class="mni">🧪</span><span class="mnl">Recipes</span></button>
-    <button class="mobile-nav-item" data-page="shopping" onclick="mobileNavDrawer('shopping',this)"><span class="mni">🛒</span><span class="mnl">Shopping</span></button>
-    <button class="mobile-nav-item" data-page="harmony" onclick="mobileNavDrawer('harmony',this)"><span class="mni">🎡</span><span class="mnl">Harmony</span></button>
-      <button class="mobile-nav-item" data-page="valuescale" onclick="mobileNavDrawer('valuescale',this)"><span class="mni">◑</span><span class="mnl">Value Scale</span></button>
-      <button class="mobile-nav-item" data-page="backup" onclick="mobileNavDrawer('backup',this)"><span class="mni">💾</span><span class="mnl">Backup</span></button>
-      
+      <button class="mobile-nav-item" data-page="backup" onclick="mobileNavDrawer('backup',this)"><span class="mni">🛟</span><span class="mnl">Backup</span></button>
     </div>
   </div>
   <!-- Fixed bottom bar: current page + menu toggle -->
@@ -1859,7 +1842,10 @@ const GROUP_LABELS={Yellows:'Yellows & Golds',Oranges:'Oranges',Reds:'Reds & Pin
 function loadPalettes(){
   try{return JSON.parse(localStorage.getItem('wc_palettes')||'[]');}catch{return[];}
 }
-function savePalettes(p){localStorage.setItem('wc_palettes',JSON.stringify(p));}
+function savePalettes(p){
+  localStorage.setItem('wc_palettes',JSON.stringify(p));
+  trackChangeForBackupReminder();
+}
 
 let palettes=loadPalettes();
 let activePaletteId=palettes.length?palettes[0].id:null;
@@ -1870,185 +1856,6 @@ function genId(){return Date.now().toString(36)+Math.random().toString(36).slice
 // ══════════════════════════════════════════════════════════════
 // PAGE NAVIGATION
 // ══════════════════════════════════════════════════════════════
-// ══════════════════════════════════════════════════════════════
-// VALUE SCALE
-// ══════════════════════════════════════════════════════════════
-var _vsRendered=false;
-function renderValueScale(){
-  if(_vsRendered) return; // static content — only build once
-  _vsRendered=true;
-  var el=document.getElementById('valuescale-page');
-
-  // Zone definitions — 10 steps, 1=white, 10=black (Ansel Adams Zone System)
-  var ZONES=[
-    {n:1, hex:'#f7f7f7', label:'High Light',       desc:'Pure white of the paper. Unpainted areas, bright sky, sun reflections on water.',          paint:'Leave bare paper — no pigment applied.'},
-    {n:2, hex:'#dcdcdc', label:'Light',             desc:'Lightest wash tone. Snow in shade, very pale sky, highlights on light objects.',           paint:'A single very dilute wash; barely any pigment.'},
-    {n:3, hex:'#b4b4b4', label:'Light Middle',      desc:'Light-but-visible tone. Lit side of pale subjects, distant foliage, hazy atmosphere.',    paint:'Two dilute washes or one medium wash.'},
-    {n:4, hex:'#8c8c8c', label:'Middle Value',      desc:'True middle grey. Shadowed side of white objects, average sky, most green foliage.',       paint:'Two medium washes. Your workhorse tone.'},
-    {n:5, hex:'#6e6e6e', label:'Dark Middle',       desc:'Slightly dark of centre. Shadows on mid-tone objects, wet pavement, tree trunks.',         paint:'Medium-strength pigment or stacked washes.'},
-    {n:6, hex:'#505050', label:'Shadow',            desc:'Clear shadow tone. Shaded sides of buildings, under-sides of foliage, deep water.',        paint:'Strong wash; pigment at half tube consistency.'},
-    {n:7, hex:'#3c3c3c', label:'Dark Shadow',       desc:'Deep shadow, still shows detail. Dark tree masses, shadows in foreground objects.',        paint:'Near-full strength pigment. Minimal water.'},
-    {n:8, hex:'#282828', label:'Near Black',        desc:'Very dark, limited detail. Deepest cast shadows, dark tree silhouettes, night scenes.',    paint:'Full-strength pigment. Test on scrap first.'},
-    {n:9, hex:'#141414', label:'Deep Dark',         desc:'Almost black. Darkest accents — usually a small, deliberate focal area or accent.',        paint:'Dense pigment, possibly layered darks.'},
-    {n:10,hex:'#050505', label:'Black',             desc:'Deepest possible dark. Rarely used in full; a small accent makes lights sing.',            paint:'Darkest dark — use sparingly as a final accent.'},
-  ];
-
-  // Neutral/grey paints from the color database
-  var neutralPaints=COLORS.filter(function(c){
-    var parsed=parseHex(c.hex);
-    var r=parsed[0],g=parsed[1],b=parsed[2];
-    var lum=(r*0.299+g*0.587+b*0.114);
-    var maxC=Math.max(r,g,b), minC=Math.min(r,g,b);
-    var sat=(maxC-minC)/(maxC||1);
-    // Low saturation and not too light (not whites/creams)
-    return sat<0.12 && lum<220 && lum>8 && (c.group==='Blacks'||c.group==='Neutrals'||c.name.toLowerCase().indexOf('grey')>-1||c.name.toLowerCase().indexOf('gray')>-1||c.name.toLowerCase().indexOf('black')>-1||c.name.toLowerCase().indexOf('neutral')>-1||c.name.toLowerCase().indexOf('payne')>-1||c.name.toLowerCase().indexOf('graphite')>-1||c.name.toLowerCase().indexOf('charcoal')>-1||c.name.toLowerCase().indexOf('slate')>-1);
-  }).sort(function(a,b){
-    var la=parseHex(a.hex), lb=parseHex(b.hex);
-    var lumA=la[0]*0.299+la[1]*0.587+la[2]*0.114;
-    var lumB=lb[0]*0.299+lb[1]*0.587+lb[2]*0.114;
-    return lumB-lumA; // light to dark
-  });
-
-  // Map each neutral paint to its approximate zone (1–10)
-  function hexToZone(hex){
-    var p=parseHex(hex);
-    var lum=(p[0]*0.299+p[1]*0.587+p[2]*0.114)/255;
-    return Math.max(1,Math.min(10,Math.round((1-lum)*9)+1));
-  }
-
-  // Text colour that contrasts against a hex background
-  function contrastColor(hex){
-    var p=parseHex(hex);
-    var lum=(p[0]*0.299+p[1]*0.587+p[2]*0.114);
-    return lum>140?'#1c1a16':'#f5f0e8';
-  }
-
-  var html='';
-
-  // ── Header ──
-  html+='<div class="vs-header">'
-      +'<div class="vs-title">Value Scale</div>'
-      +'<div class="vs-subtitle">Value — the lightness or darkness of a tone — is the single most important element in painting. A painting with correct values will read well even in greyscale. Use this reference before and during painting to judge your tones.</div>'
-      +'</div>';
-
-  // ── Continuous gradient bar ──
-  html+='<div class="vs-gradient-section">'
-      +'<div class="vs-section-title">Continuous Tonal Range</div>'
-      +'<div class="vs-gradient-bar"><canvas id="vs-gradient-canvas"></canvas></div>'
-      +'<div class="vs-gradient-labels"><span>White (Value 1)</span><span>Middle Grey (Value 5–6)</span><span>Black (Value 10)</span></div>'
-      +'</div>';
-
-  // ── 10-step scale ──
-  html+='<div class="vs-steps-section">'
-      +'<div class="vs-section-title">10-Step Zone System</div>'
-      +'<div class="vs-steps">';
-  ZONES.forEach(function(z){
-    var txt=contrastColor(z.hex);
-    html+='<div class="vs-step" style="background:'+z.hex+';" title="Zone '+z.n+': '+z.label+'">'
-        +'<span class="vs-step-num" style="color:'+txt+';">'+z.n+'</span>'
-        +'<span class="vs-step-hex" style="color:'+txt+';">'+z.hex+'</span>'
-        +'</div>';
-  });
-  html+='</div>'
-      +'<div class="vs-gradient-labels"><span>Lightest (1)</span><span style="text-align:center;flex:1;">Middle (5)</span><span>Darkest (10)</span></div>'
-      +'</div>';
-
-  // ── Zone reference guide ──
-  html+='<div class="vs-zones-section">'
-      +'<div class="vs-section-title">Zone Reference Guide</div>'
-      +'<div class="vs-zones">';
-  ZONES.forEach(function(z){
-    var txt=contrastColor(z.hex);
-    html+='<div class="vs-zone">'
-        +'<div class="vs-zone-swatch" style="background:'+z.hex+';">'
-          +'<span class="vs-zone-num" style="color:'+txt+';">'+z.n+'</span>'
-        +'</div>'
-        +'<div class="vs-zone-body">'
-          +'<div class="vs-zone-label">'+z.label+'</div>'
-          +'<div class="vs-zone-desc">'+z.desc+'</div>'
-          +'<div class="vs-zone-painting">🖌 '+z.paint+'</div>'
-        +'</div>'
-        +'</div>';
-  });
-  html+='</div></div>';
-
-  // ── Neutral paints from database ──
-  if(neutralPaints.length){
-    html+='<div class="vs-paints-section">'
-        +'<div class="vs-section-title">Neutral &amp; Grey Paints in Your Database</div>'
-        +'<div class="vs-paints-intro">These paints from the color database are sorted light to dark. Each sits in an approximate zone, useful for mixing tonal washes or building a limited palette of values.</div>';
-    neutralPaints.forEach(function(c,i){
-      var zone=hexToZone(c.hex);
-      var p=parseHex(c.hex);
-      var lum=Math.round((p[0]*0.299+p[1]*0.587+p[2]*0.114)/255*100);
-      html+='<div class="vs-paint-row">'
-          +'<div class="vs-paint-swatch"><canvas id="vsp_'+i+'"></canvas></div>'
-          +'<div class="vs-paint-info">'
-            +'<div class="vs-paint-name">'+c.name+'</div>'
-            +'<div class="vs-paint-meta">'+c.pigment+'</div>'
-            +'<div class="vs-paint-brand">'+(BRAND_LABELS[c.brand]||c.brand)+'</div>'
-          +'</div>'
-          +'<div class="vs-value-indicator">'
-            +'<div class="vs-value-dot" style="background:'+ZONES[zone-1].hex+';border-color:rgba(0,0,0,0.12);"></div>'
-            +'<div class="vs-value-label">Zone '+zone+'</div>'
-          +'</div>'
-          +'</div>';
-    });
-    html+='</div>';
-  }
-
-  // ── Painting tips ──
-  html+='<div class="vs-tips-section">'
-      +'<div class="vs-section-title">Painting Tips</div>'
-      +'<div class="vs-tips">'
-      +'<div class="vs-tip"><div class="vs-tip-icon">🌫</div><div class="vs-tip-text"><strong>Squint test:</strong> Squint at your subject until details blur. What remains is pure value structure — this is what makes or breaks a painting.</div></div>'
-      +'<div class="vs-tip"><div class="vs-tip-icon">📱</div><div class="vs-tip-text"><strong>Greyscale check:</strong> Photograph your painting and convert to greyscale in your phone. If the values are wrong they will be obvious immediately.</div></div>'
-      +'<div class="vs-tip"><div class="vs-tip-icon">💧</div><div class="vs-tip-text"><strong>Watercolour dries lighter:</strong> Your wash will lighten by 20–40% as it dries. Mix darker than you think you need.</div></div>'
-      +'<div class="vs-tip"><div class="vs-tip-icon">⬜</div><div class="vs-tip-text"><strong>Reserve your whites:</strong> In watercolour your lightest light is the bare paper (Zone 1). Once it is covered it cannot be recovered — plan ahead.</div></div>'
-      +'<div class="vs-tip"><div class="vs-tip-icon">🎯</div><div class="vs-tip-text"><strong>Limit your darks:</strong> Reserve Zone 9–10 for a single focal point or accent. Too many darks of equal weight flatten a painting.</div></div>'
-      +'<div class="vs-tip"><div class="vs-tip-icon">🎨</div><div class="vs-tip-text"><strong>Three-value rule:</strong> Simplify any scene into just three values — light, mid, dark. Nail those first, then refine. Most successful paintings work in three values.</div></div>'
-      +'</div></div>';
-
-  el.innerHTML=html;
-
-  // Render the gradient canvas
-  requestAnimationFrame(function(){
-    var gc=document.getElementById('vs-gradient-canvas');
-    if(gc){
-      var W=gc.parentElement.offsetWidth, H=gc.parentElement.offsetHeight;
-      var dpr=window.devicePixelRatio||1;
-      gc.width=W*dpr; gc.height=H*dpr;
-      var ctx=gc.getContext('2d'); ctx.scale(dpr,dpr);
-      // Watercolor paper texture + gradient
-      var imgData=ctx.createImageData(W,H);var dat=imgData.data;
-      var ox=Math.random()*200, oy=Math.random()*200;
-      for(var y=0;y<H;y++){for(var x=0;x<W;x++){
-        var idx=(y*W+x)*4;
-        var t=x/W; // 0=white, 1=black
-        var base=Math.round(255*(1-t));
-        // Slight paper texture noise
-        var pn=fbm(ox+x*0.08,oy+y*0.08,2)*10;
-        var v=Math.min(255,Math.max(0,base+pn*(1-t*0.7)));
-        dat[idx]=dat[idx+1]=dat[idx+2]=v; dat[idx+3]=255;
-      }}
-      ctx.putImageData(imgData,0,0);
-      // Vignette top and bottom edges
-      var vg=ctx.createLinearGradient(0,0,0,H);
-      vg.addColorStop(0,'rgba(0,0,0,0.08)'); vg.addColorStop(0.15,'rgba(0,0,0,0)');
-      vg.addColorStop(0.85,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,0.08)');
-      ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
-    }
-
-    // Render each neutral paint swatch canvas
-    neutralPaints.forEach(function(c,i){
-      var cv=document.getElementById('vsp_'+i);
-      if(!cv) return;
-      var W2=44, H2=44;
-      renderSwatchCanvas(cv,c.hex,c.gran,c.transparency,W2,H2);
-    });
-  });
-}
-
 function showPage(id,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
@@ -2064,7 +1871,30 @@ function showPage(id,btn){
   if(id==='shopping'){shopSearchBuilt=false;renderShoppingPage();}
   if(id==='harmony') renderHarmonyPage();
   if(id==='backup') renderBackupPage();
-  if(id==='valuescale') renderValueScale();
+}
+
+// ── "More" dropdown menu (secondary tools) ──
+function toggleNavMore(e){
+  e.stopPropagation();
+  var menu=document.getElementById('nav-more-menu');
+  menu.classList.toggle('open');
+}
+function closeNavMore(){
+  var menu=document.getElementById('nav-more-menu');
+  if(menu) menu.classList.remove('open');
+}
+document.addEventListener('click',function(e){
+  var menu=document.getElementById('nav-more-menu');
+  if(menu && menu.classList.contains('open') && !e.target.closest('.nav-more-wrap')) closeNavMore();
+});
+// Highlight the More trigger and the relevant submenu item when a "More" page is active
+function syncNavTabActive(id){
+  var moreBtn=document.querySelector('.nav-more-btn');
+  var inMore=!!document.querySelector('.nav-more-menu button[data-page="'+id+'"]');
+  if(moreBtn) moreBtn.classList.toggle('active', inMore);
+  document.querySelectorAll('.nav-more-menu button').forEach(function(b){
+    b.classList.toggle('active', b.dataset.page===id);
+  });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2081,7 +1911,10 @@ function renderPaletteList(){
         <div class="palette-item-swatches">${swatches}</div>
         <span class="palette-item-name">${p.name}</span>
         <span class="palette-item-count">${p.colors.length}</span>
-        <button class="palette-item-del" onclick="deletePalette(event,'${p.id}')">✕</button>
+        <div class="palette-item-actions">
+          <button class="palette-item-btn" title="Duplicate palette" onclick="duplicatePalette(event,'${p.id}')">⧉</button>
+          <button class="palette-item-btn del" title="Delete palette" onclick="deletePalette(event,'${p.id}')">✕</button>
+        </div>
       </div>`;
     }).join('');
   }
@@ -2110,12 +1943,14 @@ function renderPaletteArea(){
   area.innerHTML=`
     <div class="palette-header">
       <input class="palette-name-input" value="${pal.name}" onchange="renamePalette('${pal.id}',this.value)" maxlength="40">
-      <div class="view-tabs">
-        <button class="view-tab${activePaletteView==='swatch'?' active':''}" onclick="setPaletteView('swatch')">Swatches</button>
-        <button class="view-tab${activePaletteView==='wheel'?' active':''}" onclick="setPaletteView('wheel')">Color Wheel</button>
-        <button class="view-tab${activePaletteView==='mixing'?' active':''}" onclick="setPaletteView('mixing')">Mixing Chart</button>
-      </div>
       <button class="btn-add-colors" onclick="showPage('reference',document.querySelector('.nav-tab:nth-child(2)'))">+ Add Colors</button>
+    </div>
+    <div class="palette-header-row2">
+      <div class="view-tabs">
+        <button class="view-tab${activePaletteView==='swatch'?' active':''}" onclick="setPaletteView('swatch')"><span class="vt-icon">▦</span> Swatches</button>
+        <button class="view-tab${activePaletteView==='wheel'?' active':''}" onclick="setPaletteView('wheel')"><span class="vt-icon">◔</span> Color Wheel</button>
+        <button class="view-tab${activePaletteView==='mixing'?' active':''}" onclick="setPaletteView('mixing')"><span class="vt-icon">⊞</span> Mixing Chart</button>
+      </div>
     </div>
     <div class="palette-notes-wrap">
       <textarea class="palette-notes-input" rows="2" placeholder="Notes about this palette — subjects, techniques, color relationships…" onchange="savePaletteNotes('${pal.id}',this.value)">${pal.notes||''}</textarea>
@@ -2158,7 +1993,7 @@ function renderSwatchView(pal,content){
     <button class="sort-btn${palSortMode==='lf'?' active':''}" onclick="setPalSort('lf','${pal.id}')">⭐ <span class="sb-by">By </span><span class="sb-long">Lightfastness</span><span class="sb-short">LF</span></button>
     <button class="sort-btn${palSortMode==='brand'?' active':''}" onclick="setPalSort('brand','${pal.id}')">🏷 <span class="sb-by">By </span>Brand</button>
     <button class="sort-btn${palSortMode==='transparency'?' active':''}" onclick="setPalSort('transparency','${pal.id}')">◐ <span class="sb-by">By </span>Opacity</button>
-    <span class="sort-label">${pal.colors.length} colors${palSortMode==='custom'?' · double-click card to drag':''}</span>
+    <span class="sort-label">${pal.colors.length} colors${palSortMode==='custom'?' · drag ⠿ to reorder':''}</span>
   </div>`;
 
   const sorted=getSortedColors(pal);
@@ -2170,6 +2005,7 @@ function renderSwatchView(pal,content){
       const hasPhoto=!!c.photo;
       const showPhoto=hasPhoto&&(c.photoVisible!==false);
       return `<div class="sg-card" draggable="false" data-idx="${realIdx}" data-palid="${pal.id}">
+        ${palSortMode==='custom'?`<button class="sg-handle" title="Drag to reorder" aria-label="Drag to reorder">⠿</button>`:''}
         <div class="sg-swatch" style="background:${c.hex};">
           <canvas id="sgc_${pal.id}_${realIdx}" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;${showPhoto?'opacity:0;':''}"></canvas>
           <div class="sg-photo${showPhoto?' visible':''}" id="sgp_${pal.id}_${realIdx}" style="${c.photo?'background-image:url('+c.photo+');':''}"></div>
@@ -2424,6 +2260,23 @@ function createPalette(){
 function renamePalette(id,name){
   const p=palettes.find(x=>x.id===id);
   if(p){p.name=name||'Untitled';savePalettes(palettes);renderPaletteList();}
+}
+
+function duplicatePalette(e,id){
+  e.stopPropagation();
+  const p=palettes.find(x=>x.id===id);
+  if(!p) return;
+  const copy={
+    id:genId(),
+    name:p.name+' (copy)',
+    colors:p.colors.map(c=>({...c})),
+    notes:p.notes||''
+  };
+  palettes.push(copy);
+  savePalettes(palettes);
+  activePaletteId=copy.id;
+  renderPaletteList();
+  showToast(`"${p.name}" duplicated`);
 }
 
 function deletePalette(e,id){
@@ -3203,6 +3056,12 @@ function renderRecipes(){
     return true;
   });
 
+  // Notice: recipes use Daniel Smith pigments as the reference formula
+  var noticeHtml='<div class="recipe-notice">'
+    +'<span class="recipe-notice-icon">ℹ</span>'
+    +'<span>Recipes are written using <strong>Daniel Smith</strong> paints as the reference formula. If you paint with other brands, tap <strong>"Find in my brand"</strong> on any ingredient to see the closest match from the full color database.</span>'
+    +'</div>';
+
   // Build tag filters above grid
   var tagHtml='<div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1rem;">'
     +['all',...allRecipeTags].map(function(t){
@@ -3210,12 +3069,12 @@ function renderRecipes(){
     }).join('')+'</div>';
 
   if(!filtered.length){
-    wrap.innerHTML=tagHtml+'<div style="padding:3rem;text-align:center;color:var(--ink3);font-style:italic;">No recipes match your search.</div>';
+    wrap.innerHTML=noticeHtml+tagHtml+'<div style="padding:3rem;text-align:center;color:var(--ink3);font-style:italic;">No recipes match your search.</div>';
     return;
   }
 
   var cards='';
-  filtered.forEach(function(r){
+  filtered.forEach(function(r,ri){
     // Calculate mixed color
     var rs=r.parts.map(function(p){return COLORS.find(function(c){return c.name===p.name&&c.brand===p.brand;})||{hex:'#888888',name:p.name};});
     var totalRatio=r.parts.reduce(function(s,p){return s+p.ratio;},0);
@@ -3236,10 +3095,12 @@ function renderRecipes(){
       var c=rs[i];
       var barW=Math.round(p.ratio/totalRatio*100);
       partsHtml+='<div class="recipe-part">'
-        +'<div class="rp-label" title="'+p.name+'">'+p.name.split(' ').slice(0,3).join(' ')+'</div>'
+        +'<div class="rp-label" title="'+p.name+' (Daniel Smith)">'+p.name.split(' ').slice(0,3).join(' ')+'</div>'
         +'<div class="rp-bar-wrap"><div class="rp-bar" style="width:'+barW+'%;background:'+c.hex+';"></div></div>'
         +'<span class="rp-ratio">'+p.ratio+'pt</span>'
-        +'</div>';
+        +'<button class="rp-sub-btn" title="Find closest match in any brand" onclick="showRecipeSubstitute(this,'+ri+','+i+')">⇄</button>'
+        +'</div>'
+        +'<div class="rp-sub-result" id="rp-sub-'+ri+'-'+i+'"></div>';
     });
     var tagsHtml=r.tags.map(function(t){return '<span class="recipe-tag">'+t+'</span>';}).join('');
 
@@ -3255,7 +3116,40 @@ function renderRecipes(){
       +'</div>'
       +'</div>';
   });
-  wrap.innerHTML=tagHtml+'<div class="recipes-grid">'+cards+'</div>';
+  wrap.innerHTML=noticeHtml+tagHtml+'<div class="recipes-grid" id="recipes-grid-data">'+cards+'</div>';
+  // Stash the filtered recipe list on the DOM container for the substitute lookup
+  window._currentRecipeList = filtered;
+}
+
+function showRecipeSubstitute(btn, recipeIdx, partIdx){
+  var r = window._currentRecipeList && window._currentRecipeList[recipeIdx];
+  if(!r) return;
+  var p = r.parts[partIdx];
+  var original = COLORS.find(function(c){return c.name===p.name&&c.brand===p.brand;});
+  if(!original) return;
+  var resultEl = document.getElementById('rp-sub-'+recipeIdx+'-'+partIdx);
+  if(!resultEl) return;
+  // Toggle off if already showing
+  if(resultEl.classList.contains('open')){
+    resultEl.classList.remove('open');
+    resultEl.innerHTML='';
+    return;
+  }
+  // Find closest match excluding Daniel Smith so we surface a genuine cross-brand alternative
+  var nonDSMatches = COLORS.filter(function(c){return c.brand!=='daniel-smith';});
+  var best=null, bestDist=Infinity;
+  nonDSMatches.forEach(function(c){
+    var or_=parseHex(original.hex), cr_=parseHex(c.hex);
+    var dr=or_[0]-cr_[0], dg=or_[1]-cr_[1], db=or_[2]-cr_[2];
+    var d=dr*dr+dg*dg+db*db;
+    if(d<bestDist){bestDist=d;best=c;}
+  });
+  if(!best){ resultEl.innerHTML=''; return; }
+  resultEl.classList.add('open');
+  resultEl.innerHTML='<div class="rp-sub-card">'
+    +'<div class="rp-sub-swatch" style="background:'+best.hex+';"></div>'
+    +'<div class="rp-sub-info"><strong>'+best.name+'</strong><span>'+(BRAND_LABELS[best.brand]||best.brand)+' · '+best.pigment+'</span></div>'
+    +'</div>';
 }
 
 
@@ -3360,23 +3254,15 @@ function initDragDrop(pal) {
   if (!sgGrid) return;
 
   sgGrid.querySelectorAll('.sg-card').forEach(function(card) {
+    var handle = card.querySelector('.sg-handle');
+    if (!handle) return; // not in custom sort mode
 
-    // ── DESKTOP: double-click to enter drag mode ──
-    var clickTimer = null;
-    card.addEventListener('click', function(e) {
-      if (e.target.tagName==='INPUT'||e.target.tagName==='BUTTON') return;
-      if (palSortMode!=='custom') return;
-      if (clickTimer) {
-        // Double-click
-        clearTimeout(clickTimer); clickTimer=null;
-        if (_dragModeCard===card) exitDragMode(card);
-        else enterDragMode(card);
-      } else {
-        clickTimer = setTimeout(function(){ clickTimer=null; }, 300);
-      }
+    // ── DESKTOP: mousedown on handle arms drag, dragstart fires naturally ──
+    handle.addEventListener('mousedown', function(e) {
+      e.stopPropagation();
+      enterDragMode(card);
     });
 
-    // ── DESKTOP: drag events (only work when drag-ready) ──
     card.addEventListener('dragstart', function(e) {
       if (!card.classList.contains('drag-ready')) { e.preventDefault(); return; }
       dragSrcIdx = parseInt(card.dataset.idx);
@@ -3408,34 +3294,20 @@ function initDragDrop(pal) {
       renderPaletteView(p);
     });
 
-    // ── MOBILE: long-press (600ms) to enter drag mode ──
-    var pressTimer = null;
-    var pressStartX = 0, pressStartY = 0;
+    // ── MOBILE: touch directly on the handle starts the drag, no delay ──
     var touchDragging = false;
 
-    card.addEventListener('touchstart', function(e) {
-      if (e.target.tagName==='INPUT'||e.target.tagName==='BUTTON') return;
-      if (palSortMode!=='custom') return;
-      var t=e.touches[0];
-      pressStartX=t.clientX; pressStartY=t.clientY;
-      touchDragging=false;
-      pressTimer=setTimeout(function(){
-        pressTimer=null;
-        enterDragMode(card);
-      }, 600);
+    handle.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+      enterDragMode(card);
+      touchDragging = true;
     }, {passive:true});
 
     card.addEventListener('touchmove', function(e) {
+      if (!card.classList.contains('drag-ready') || !touchDragging) return;
+      e.preventDefault();
+
       var t=e.touches[0];
-      var dx=Math.abs(t.clientX-pressStartX), dy=Math.abs(t.clientY-pressStartY);
-      // Cancel long-press if finger moved more than 8px
-      if ((dx>8||dy>8) && pressTimer) { clearTimeout(pressTimer); pressTimer=null; }
-
-      if (!card.classList.contains('drag-ready')) return; // not in drag mode — allow scroll
-      e.preventDefault(); // in drag mode — prevent scroll
-      touchDragging=true;
-
-      // Create/move clone
       if (!window._touchClone) {
         window._touchClone=card.cloneNode(true);
         window._touchClone.style.cssText='position:fixed;opacity:0.75;pointer-events:none;z-index:9999;width:'+card.offsetWidth+'px;transform:scale(1.05);border-radius:5px;box-shadow:0 8px 24px rgba(0,0,0,0.25);transition:none;';
@@ -3454,12 +3326,12 @@ function initDragDrop(pal) {
     }, {passive:false});
 
     card.addEventListener('touchend', function(e) {
-      if (pressTimer) { clearTimeout(pressTimer); pressTimer=null; }
       if (window._touchClone) { window._touchClone.remove(); window._touchClone=null; }
       sgGrid.querySelectorAll('.sg-card').forEach(function(c){c.classList.remove('drag-over');});
 
       if (!touchDragging||!card.classList.contains('drag-ready')) {
         exitDragMode(card);
+        touchDragging=false;
         return;
       }
 
@@ -3481,7 +3353,6 @@ function initDragDrop(pal) {
     });
 
     card.addEventListener('touchcancel', function() {
-      if (pressTimer) { clearTimeout(pressTimer); pressTimer=null; }
       if (window._touchClone) { window._touchClone.remove(); window._touchClone=null; }
       exitDragMode(card);
       touchDragging=false;
@@ -3640,6 +3511,42 @@ function buildBackupObject(){
 }
 function backupJSON(){ return JSON.stringify(buildBackupObject(), null, 2); }
 
+// ── BACKUP REMINDER SYSTEM ──
+// Tracks meaningful changes since the last export/import and gently nudges
+// the user to back up once enough changes accumulate, without being pushy.
+var BACKUP_REMINDER_THRESHOLD = 12; // number of save events before nudging
+function trackChangeForBackupReminder(){
+  try{
+    var n = parseInt(localStorage.getItem('wc_changes_since_backup')||'0',10) + 1;
+    localStorage.setItem('wc_changes_since_backup', String(n));
+    updateBackupReminderBanner(n);
+  }catch(e){}
+}
+function markBackupDone(){
+  try{
+    localStorage.setItem('wc_changes_since_backup','0');
+    localStorage.setItem('wc_last_backup_date', new Date().toISOString());
+    updateBackupReminderBanner(0);
+  }catch(e){}
+}
+function dismissBackupReminder(){
+  try{ localStorage.setItem('wc_changes_since_backup','0'); }catch(e){}
+  var b=document.getElementById('backup-reminder-banner');
+  if(b) b.classList.remove('show');
+}
+function updateBackupReminderBanner(n){
+  var b=document.getElementById('backup-reminder-banner');
+  if(!b) return;
+  if(n>=BACKUP_REMINDER_THRESHOLD) b.classList.add('show');
+  else b.classList.remove('show');
+}
+function goToBackupPage(){
+  var moreBtn=document.querySelector('.nav-more-btn');
+  showPage('backup', null);
+  syncNavTabActive('backup');
+  if(typeof closeMobileDrawer==='function') closeMobileDrawer();
+}
+
 function renderBackupPage(){
   var stats=document.getElementById('backup-stats');
   if(stats){
@@ -3668,6 +3575,7 @@ function downloadBackup(){
     document.body.removeChild(a);
     setTimeout(function(){URL.revokeObjectURL(url);},1500);
     showToast('Backup downloaded');
+    markBackupDone();
   }catch(e){ showToast('Could not download — try Copy as text'); }
 }
 
@@ -3675,9 +3583,9 @@ function copyBackupToClipboard(){
   var text=backupJSON();
   var ta=document.getElementById('backup-export-text');
   if(ta) ta.value=text;
-  function fallback(){ if(ta){ta.focus();ta.select();try{document.execCommand('copy');showToast('Backup copied');}catch(e){showToast('Select the text above and copy manually');}} }
+  function fallback(){ if(ta){ta.focus();ta.select();try{document.execCommand('copy');showToast('Backup copied');markBackupDone();}catch(e){showToast('Select the text above and copy manually');}} }
   if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(function(){showToast('Backup copied');},fallback);
+    navigator.clipboard.writeText(text).then(function(){showToast('Backup copied');markBackupDone();},fallback);
   }else{ fallback(); }
 }
 
@@ -3738,10 +3646,12 @@ function applyImport(text){
   if(typeof renderPaletteArea==='function') renderPaletteArea();
   var it=document.getElementById('backup-import-text'); if(it) it.value='';
   renderBackupPage();
+  markBackupDone();
   showToast('Backup restored ✓');
 }
 var shoppingList = loadShoppingList();
 var shopBrand = 'all';
+var shopListBrand = 'all'; // filters the existing shopping list (separate from the add-colors brand filter)
 var shopSearchBuilt = false;
 var shopSearch = '';
 
@@ -3768,9 +3678,23 @@ function renderShoppingPage(){
   if (!shoppingList.length) {
     html += '<div class="shop-empty">Your list is empty.<br>Browse the Brand Reference or use the search below to add colors.</div>';
   } else {
-    // Group: to buy first, then bought
-    var toBuy   = shoppingList.filter(function(i){ return !i.bought; });
-    var gotIt   = shoppingList.filter(function(i){ return i.bought; });
+    // Brand filter for the list itself — only show brands actually present on the list
+    var listBrands = [...new Set(shoppingList.map(function(i){return i.brand;}))].sort();
+    if (listBrands.length>1) {
+      html += '<div class="shop-list-filter" id="shop-list-filter">'
+        + '<button class="filt-btn'+(shopListBrand==='all'?' active':'')+'" data-brand="all" onclick="shopSetListBrand(this.dataset.brand,this)">All Brands</button>'
+        + listBrands.map(function(b){
+            var lbl=BRAND_LABELS[b]||b;
+            var cnt=shoppingList.filter(function(i){return i.brand===b;}).length;
+            return '<button class="filt-btn'+(shopListBrand===b?' active':'')+'" data-brand="'+b+'" onclick="shopSetListBrand(this.dataset.brand,this)">'+lbl+' ('+cnt+')</button>';
+          }).join('')
+        + '</div>';
+    }
+
+    // Group: to buy first, then bought — filtered by selected brand
+    var visible = shopListBrand==='all' ? shoppingList : shoppingList.filter(function(i){return i.brand===shopListBrand;});
+    var toBuy   = visible.filter(function(i){ return !i.bought; });
+    var gotIt   = visible.filter(function(i){ return i.bought; });
     var renderGroup = function(items, label) {
       if (!items.length) return '';
       var s = '<div class="shop-group-title">'+label+'</div>';
@@ -3794,8 +3718,12 @@ function renderShoppingPage(){
       });
       return s;
     };
-    html += renderGroup(toBuy, 'To Buy');
-    html += renderGroup(gotIt, 'Got It ✓');
+    if (!visible.length) {
+      html += '<div class="shop-empty">No items from this brand on your list.</div>';
+    } else {
+      html += renderGroup(toBuy, 'To Buy');
+      html += renderGroup(gotIt, 'Got It ✓');
+    }
   }
 
   // Add from reference section
@@ -3820,6 +3748,11 @@ function renderShoppingPage(){
     return '<button class="filt-btn'+(b===shopBrand?' active':'')+'" data-brand="'+b+'" onclick="shopSetBrand(this.dataset.brand,this)">'+lbl+'</button>';
   }).join('');
   renderShopGrid();
+}
+
+function shopSetListBrand(brand, btn) {
+  shopListBrand = brand;
+  renderShoppingPage();
 }
 
 function shopSetBrand(brand, btn) {
@@ -4102,6 +4035,7 @@ function mobileNavDrawer(id, btn) {
   document.querySelectorAll('.nav-tab').forEach(function(t){
     t.classList.toggle('active', t.getAttribute('onclick')&&t.getAttribute('onclick').includes("'"+id+"'"));
   });
+  syncNavTabActive(id);
 }
 
 function updateMobileBar(id) {
@@ -4191,6 +4125,29 @@ document.addEventListener('touchmove', function(e){
 // INIT
 // ══════════════════════════════════════════════════════════════
 renderPaletteList();
+(function(){
+  try{
+    var n = parseInt(localStorage.getItem('wc_changes_since_backup')||'0',10);
+    updateBackupReminderBanner(n);
+  }catch(e){}
+})();
+(function(){
+  try{
+    var saved = localStorage.getItem('wc_app_name_prefix');
+    var el = document.getElementById('app-name-prefix');
+    if(el) el.textContent = saved || "James's";
+  }catch(e){}
+})();
+function editAppName(){
+  var el = document.getElementById('app-name-prefix');
+  if(!el) return;
+  var current = el.textContent;
+  var next = prompt('Personalize the app name (shown before "Palette Studio"):', current);
+  if(next===null) return; // cancelled
+  next = next.trim() || 'My';
+  el.textContent = next;
+  try{ localStorage.setItem('wc_app_name_prefix', next); }catch(e){}
+}
 </script>
 </body>
 </html>
